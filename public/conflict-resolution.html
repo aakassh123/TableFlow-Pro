@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Node Sync & Conflict Resolution — Flagship Kitchen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-card: rgba(18, 24, 38, 0.85);
+            --bg-elevated: #1a2234;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #a855f7;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            padding: 24px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 40%);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .title-group h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-online {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .badge-offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-syncing {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 9px 18px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: var(--accent-amber);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--accent-red);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 26px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: -0.5px;
+        }
+
+        .metric-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .content-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-count {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .conflict-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .conflict-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: border-color 0.2s ease;
+        }
+
+        .conflict-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .conflict-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .conflict-type-tag {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .conflict-id {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .conflict-reason {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fecdd3;
+            margin-bottom: 16px;
+            padding: 10px 14px;
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 3px solid var(--accent-red);
+            border-radius: 4px;
+        }
+
+        .state-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .state-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .state-col {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+
+        .state-header {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .state-header.local { color: var(--accent-blue); }
+        .state-header.cloud { color: var(--accent-purple); }
+
+        .state-payload {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .conflict-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .notes-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            padding: 8px 12px;
+            font-family: var(--font-main);
+            font-size: 13px;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .banner-notice {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #bae6fd;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="title-group">
+            <h1>
+                <span>🛡️</span>
+                Edge Node Sync & Conflict Resolution
+            </h1>
+            <p class="subtitle">Guarantees 100% kitchen continuity when internet fails • Zero silent data loss on reconnect</p>
+        </div>
+        <div class="header-controls">
+            <span id="nodeStatusBadge" class="badge-status badge-online">
+                <span class="pulse-dot"></span>
+                <span id="nodeStatusText">ONLINE</span>
+            </span>
+            <button id="btnToggleMode" class="btn" onclick="toggleConnectivity()">
+                <span>⚡</span>
+                <span id="btnToggleText">Simulate Internet Cut (Offline)</span>
+            </button>
+            <button class="btn btn-primary" onclick="triggerSync()">
+                <span>🔄</span>
+                <span>Run Cloud Sync</span>
+            </button>
+            <a href="/dashboard" class="btn">
+                <span>📊</span>
+                <span>Manager Board</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Edge Resilience Architecture Banner -->
+    <div class="banner-notice">
+        <span>💡</span>
+        <div>
+            <strong>Edge Resilience Active:</strong> Local POS, Kitchen Display Systems (KDS), Token Generation, Thermal ESC/POS Printing, and Local Recipe Inventory Deduction operate entirely on the Edge Node without internet. On reconnect, events replay deterministically by sequence number with zero silent data loss.
+        </div>
+    </div>
+
+    <!-- Health Metrics Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Node Identifier</div>
+            <div class="metric-value" id="nodeId" style="font-size: 20px;">EDGE-BLR-01</div>
+            <div class="metric-sub">Local Edge Server</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Pending Sync Backlog</div>
+            <div class="metric-value" id="pendingEventsCount" style="color: var(--accent-blue);">0</div>
+            <div class="metric-sub">Unsynced sequence events</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Last Synced Sequence</div>
+            <div class="metric-value" id="lastSequence" style="color: var(--accent-green);">#0</div>
+            <div class="metric-sub">Monotonic cursor position</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Unresolved Conflicts</div>
+            <div class="metric-value" id="unresolvedCount" style="color: var(--accent-red);">0</div>
+            <div class="metric-sub">Awaiting manager decision</div>
+        </div>
+    </div>
+
+    <!-- Conflicts Management Section -->
+    <section class="content-section">
+        <div class="section-header">
+            <h2>
+                <span>⚠️</span>
+                <span>Unresolved Sync Conflicts Queue</span>
+                <span id="conflictBadge" class="badge-count">0 PENDING</span>
+            </h2>
+            <button class="btn" onclick="loadConflicts()">Refresh Conflicts</button>
+        </div>
+
+        <div id="conflictList" class="conflict-list">
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <div style="font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px;">Zero Sync Conflicts</div>
+                <div>All local edge events have synced cleanly with the cloud database. No manager action required.</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let currentState = 'ONLINE';
+
+        async function fetchNodeStatus() {
+            try {
+                const res = await fetch('/api/edge/status');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    const node = json.data;
+                    currentState = node.connectivity_state;
+                    
+                    const badge = document.getElementById('nodeStatusBadge');
+                    const text = document.getElementById('nodeStatusText');
+                    const toggleBtnText = document.getElementById('btnToggleText');
+
+                    if (currentState === 'ONLINE') {
+                        badge.className = 'badge-status badge-online';
+                        text.innerText = 'ONLINE';
+                        toggleBtnText.innerText = 'Simulate Internet Cut (Offline)';
+                    } else if (currentState === 'OFFLINE') {
+                        badge.className = 'badge-status badge-offline';
+                        text.innerText = 'OFFLINE (OUTLET MODE)';
+                        toggleBtnText.innerText = 'Simulate Reconnect (Online)';
+                    } else {
+                        badge.className = 'badge-status badge-syncing';
+                        text.innerText = 'SYNCING...';
+                    }
+
+                    document.getElementById('nodeId').innerText = node.node_id || 'EDGE-BLR-01';
+                    document.getElementById('pendingEventsCount').innerText = node.pending_events_count || 0;
+                    document.getElementById('lastSequence').innerText = '#' + (node.last_synced_sequence || 0);
+                    document.getElementById('unresolvedCount').innerText = node.unresolved_conflicts_count || 0;
+                    document.getElementById('conflictBadge').innerText = (node.unresolved_conflicts_count || 0) + ' PENDING';
+                }
+            } catch (err) {
+                console.error('Failed to fetch node status:', err);
+            }
+        }
+
+        async function toggleConnectivity() {
+            const nextState = currentState === 'ONLINE' ? 'OFFLINE' : 'ONLINE';
+            try {
+                const res = await fetch('/api/edge/connectivity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ connectivityState: nextState })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    await fetchNodeStatus();
+                    if (nextState === 'ONLINE') {
+                        // Auto trigger sync on reconnect
+                        triggerSync();
+                    }
+                }
+            } catch (err) {
+                alert('Failed to toggle connectivity: ' + err.message);
+            }
+        }
+
+        async function triggerSync() {
+            try {
+                const res = await fetch('/api/edge/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const json = await res.json();
+                if (json.success) {
+                    await fetchNodeStatus();
+                    await loadConflicts();
+                    alert(`Sync completed! Synced: ${json.data.syncedCount}, Conflicts Queued: ${json.data.conflictCount}, Skipped: ${json.data.skippedDuplicates}`);
+                }
+            } catch (err) {
+                alert('Sync failed: ' + err.message);
+            }
+        }
+
+        async function loadConflicts() {
+            try {
+                const res = await fetch('/api/edge/conflicts');
+                const json = await res.json();
+                const container = document.getElementById('conflictList');
+
+                if (!json.success || !json.data || json.data.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <div style="font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px;">Zero Sync Conflicts</div>
+                            <div>All local edge events have synced cleanly with the cloud database. No manager action required.</div>
+                        </div>
+                    `;
+                    document.getElementById('conflictBadge').innerText = '0 PENDING';
+                    return;
+                }
+
+                document.getElementById('conflictBadge').innerText = `${json.data.length} PENDING`;
+
+                container.innerHTML = json.data.map(c => `
+                    <div class="conflict-card" id="card-${c.id}">
+                        <div class="conflict-meta">
+                            <span class="conflict-type-tag">${c.conflict_type}</span>
+                            <span class="conflict-id">ID: ${c.id.slice(0, 8)}... • Entity: ${c.entity_type}</span>
+                        </div>
+                        <div class="conflict-reason">
+                            ⚠️ <strong>Discrepancy:</strong> ${escapeHtml(c.conflict_reason)}
+                        </div>
+                        <div class="state-comparison">
+                            <div class="state-col">
+                                <div class="state-header local">
+                                    <span>Local Edge Ground Truth</span>
+                                    <span>Physical Outlet</span>
+                                </div>
+                                <div class="state-payload">${escapeHtml(JSON.stringify(c.local_state, null, 2))}</div>
+                            </div>
+                            <div class="state-col">
+                                <div class="state-header cloud">
+                                    <span>Cloud Database State</span>
+                                    <span>Remote Server</span>
+                                </div>
+                                <div class="state-payload">${escapeHtml(JSON.stringify(c.cloud_state, null, 2))}</div>
+                            </div>
+                        </div>
+                        <div class="conflict-actions">
+                            <input type="text" id="notes-${c.id}" class="notes-input" placeholder="Manager review notes (e.g. stock variance authorized)...">
+                            <div class="action-btns">
+                                <button class="btn btn-primary" onclick="resolve('${c.id}', 'KEEP_LOCAL')">
+                                    <span>✓</span> Keep Local
+                                </button>
+                                <button class="btn btn-warning" onclick="resolve('${c.id}', 'KEEP_CLOUD')">
+                                    <span>☁️</span> Keep Cloud
+                                </button>
+                                <button class="btn" style="border-color: var(--accent-green); color: var(--accent-green);" onclick="resolve('${c.id}', 'MERGE')">
+                                    <span>📊</span> Record Stock Variance
+                                </button>
+                                <button class="btn btn-danger" onclick="resolve('${c.id}', 'DISMISSED')">
+                                    <span>✕</span> Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Failed to load conflicts:', err);
+            }
+        }
+
+        async function resolve(conflictId, strategy) {
+            const notesInput = document.getElementById(`notes-${conflictId}`);
+            const notes = notesInput ? notesInput.value : '';
+
+            try {
+                const res = await fetch(`/api/edge/conflicts/${conflictId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resolutionStrategy: strategy,
+                        resolutionNotes: notes,
+                        resolvedBy: '11111111-1111-1111-1111-111111111101' // Store Manager
+                    })
+                });
+
+                const json = await res.json();
+                if (json.success) {
+                    await fetchNodeStatus();
+                    await loadConflicts();
+                } else {
+                    alert('Resolution failed: ' + json.detail);
+                }
+            } catch (err) {
+                alert('Error resolving conflict: ' + err.message);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Initialize on page load and poll status every 4 seconds
+        fetchNodeStatus();
+        loadConflicts();
+        setInterval(fetchNodeStatus, 4000);
+    </script>
+</body>
+</html>

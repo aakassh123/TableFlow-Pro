@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TABLE 07 • Live Digital Ordering & KDS Sync</title>
+    <meta name="description" content="Cryptographically signed, abuse-resistant Customer Table QR Ordering PWA with real-time KDS kitchen integration.">
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/qr-order.css">
+</head>
+<body>
+    <div class="qr-app-container" id="qrAppContainer">
+        
+        <!-- Header -->
+        <header class="qr-header" id="qrHeader">
+            <div class="brand-bar">
+                <div class="restaurant-identity">
+                    <div class="restaurant-logo">🍛</div>
+                    <div class="restaurant-names">
+                        <h1 id="restaurantName">The Grand Biryani & Grill</h1>
+                        <p id="outletLocation">Flagship Outlet • Indiranagar</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verified Table Security Card -->
+            <div class="security-session-card" id="securitySessionCard">
+                <div class="table-badge-group">
+                    <span class="table-pill" id="tableBadgeDisplay">TABLE 07</span>
+                    <div class="session-security-status">
+                        <div class="verified-label">
+                            <span class="verified-dot"></span>
+                            <span>Signed Session</span>
+                        </div>
+                        <div class="session-expiry-timer" id="sessionExpiryText">Expires in --:--</div>
+                    </div>
+                </div>
+                <button type="button" class="security-info-btn" id="securityInfoBtn" title="Anti-abuse signed QR session details">🛡️</button>
+            </div>
+        </header>
+
+        <!-- Dietary & Search Bar -->
+        <div class="filter-bar" id="filterBar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="menuSearchInput" placeholder="Search menu items..." autocomplete="off">
+            </div>
+            <div class="veg-toggle" id="vegToggleBtn">
+                <span class="veg-icon-dot"></span>
+                <span>Veg Only</span>
+            </div>
+        </div>
+
+        <!-- Category Horizontal Tabs -->
+        <nav class="category-tabs" id="categoryTabsNav">
+            <button type="button" class="cat-pill active" data-category="ALL">All Items</button>
+            <!-- Categories injected dynamically -->
+        </nav>
+
+        <!-- Menu Section -->
+        <main class="menu-section" id="menuContainer">
+            <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
+                <p>Verifying secure table session...</p>
+            </div>
+        </main>
+
+        <!-- Floating Cart Bar (Bottom Sticky) -->
+        <div class="floating-cart-bar" id="floatingCartBar" style="display: none;">
+            <div class="cart-bar-left">
+                <div class="cart-count-badge" id="cartBadgeCount">0</div>
+                <div>
+                    <div class="cart-bar-total" id="cartBarTotal">₹0</div>
+                    <div class="cart-bar-sub">Tap to review order</div>
+                </div>
+            </div>
+            <div class="cart-bar-right">
+                <span>VIEW CART</span>
+                <span>➔</span>
+            </div>
+        </div>
+
+        <!-- Slide-Up Cart Drawer Modal -->
+        <div class="cart-modal-backdrop" id="cartModalBackdrop">
+            <div class="cart-drawer" id="cartDrawer">
+                <div class="drawer-header">
+                    <div class="drawer-title" id="drawerTitle">Your Order • TABLE 07</div>
+                    <button type="button" class="drawer-close" id="drawerCloseBtn">✕</button>
+                </div>
+
+                <!-- Items list -->
+                <div class="cart-items-list" id="cartItemsList">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Cooking & Allergy Instructions -->
+                <div class="instructions-box">
+                    <label for="orderNotesInput">Special Instructions & Allergy Warnings</label>
+                    <textarea id="orderNotesInput" class="instructions-input" rows="2" placeholder="e.g. ALLERGY: PEANUT, Less spicy, Extra gravy..."></textarea>
+                    <div class="allergy-chips">
+                        <button type="button" class="chip-btn allergy-peanut" data-note="⚠ ALLERGY: PEANUT">⚠ Peanut Allergy</button>
+                        <button type="button" class="chip-btn" data-note="Extra Spicy">Extra Spicy</button>
+                        <button type="button" class="chip-btn" data-note="Less Oil & Salt">Less Oil</button>
+                        <button type="button" class="chip-btn" data-note="No Coriander">No Coriander</button>
+                    </div>
+                </div>
+
+                <!-- Payment Selection -->
+                <div class="payment-selector">
+                    <div class="payment-title">Select Payment Mode</div>
+                    <div class="payment-options">
+                        <label class="payment-radio-label selected" id="optUpiLabel">
+                            <div class="pay-opt-text">
+                                <span class="pay-opt-name">⚡ Instant UPI Payment</span>
+                                <span class="pay-opt-desc">GPay, PhonePe, Paytm, or UPI QR</span>
+                            </div>
+                            <input type="radio" name="paymentOption" value="UPI_INSTANT" checked>
+                        </label>
+                        <label class="payment-radio-label" id="optCounterLabel">
+                            <div class="pay-opt-text">
+                                <span class="pay-opt-name">🧾 Pay at Counter / Waiter</span>
+                                <span class="pay-opt-desc">Cash or Card settlement after dining</span>
+                            </div>
+                            <input type="radio" name="paymentOption" value="PAY_AT_COUNTER">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Bill Summary -->
+                <div class="bill-summary">
+                    <div class="bill-row">
+                        <span>Item Subtotal</span>
+                        <span id="billSubtotal">₹0.00</span>
+                    </div>
+                    <div class="bill-row">
+                        <span>GST (5%)</span>
+                        <span id="billGst">₹0.00</span>
+                    </div>
+                    <div class="bill-row total">
+                        <span>Total to Pay</span>
+                        <span id="billGrandTotal">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- Order Action Button -->
+                <button type="button" class="btn-place-order" id="btnPlaceOrder">
+                    <span>CONFIRM & SEND TO KITCHEN</span>
+                    <span id="btnOrderTotal">₹0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Placed Success View (Hidden by default) -->
+        <div class="success-view" id="successView" style="display: none;">
+            <div class="success-badge">✓</div>
+            <h2 class="success-title">Order Sent to Kitchen!</h2>
+            <p class="success-subtitle">Directly synchronized with the Kitchen Display System</p>
+
+            <div class="order-receipt-card">
+                <div class="receipt-header">
+                    <div>
+                        <div class="receipt-order-no" id="receiptOrderNumber">ORD-20261007-0007</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);" id="receiptTableNumber">TABLE 07</div>
+                    </div>
+                    <span class="receipt-token-badge" id="receiptTokenBadge">Token #07</span>
+                </div>
+
+                <!-- Deterministic Honest ETA -->
+                <div class="eta-promise-box">
+                    <div class="eta-label">Deterministic ETA Promise Range</div>
+                    <div class="eta-value" id="receiptEtaValue">20–25 minutes</div>
+                    <div class="eta-subtext">Calculated via station queue loads & rolling preparation medians</div>
+                </div>
+
+                <!-- Multi-station KDS Status -->
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">
+                    Kitchen Dispatch Status:
+                </div>
+                <div class="kitchen-tracker-steps">
+                    <div class="tracker-step completed">
+                        <div class="step-circle">✓</div>
+                        <div class="step-name">Order Placed</div>
+                    </div>
+                    <div class="tracker-step active" id="stepCooking">
+                        <div class="step-circle">🍳</div>
+                        <div class="step-name">In Kitchen</div>
+                    </div>
+                    <div class="tracker-step" id="stepReady">
+                        <div class="step-circle">🔔</div>
+                        <div class="step-name">Dishes Ready</div>
+                    </div>
+                    <div class="tracker-step" id="stepServed">
+                        <div class="step-circle">🍽️</div>
+                        <div class="step-name">Served</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.72rem; color: var(--text-emerald); display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px;">
+                    <span class="verified-dot"></span>
+                    <span id="realtimeSyncStatus">Live WebSocket link active to Table 07</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                <a href="#" class="btn-generate-demo" id="btnLiveTrackerLink" style="text-decoration: none;">Track in Real-Time Tracker ➔</a>
+                <button type="button" class="btn-generate-demo" id="btnOrderMore">Order More Items</button>
+            </div>
+        </div>
+
+        <!-- Security Error View (Invalid / Tampered / Expired Session) -->
+        <div class="security-error-card" id="securityErrorCard" style="display: none;">
+            <div class="security-error-icon">🛡️⚠️</div>
+            <h2 class="security-error-title" id="securityErrorTitle">Session Required</h2>
+            <p class="security-error-desc" id="securityErrorDesc">
+                Direct unauthenticated access to Table 07 is blocked to prevent prank orders.
+                A cryptographically signed, short-lived session token is required:
+                <br><br>
+                <code style="color: var(--primary-amber); background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px;">
+                    /table/7/session/xxxx
+                </code>
+            </p>
+            <button type="button" class="btn-generate-demo" id="btnGenerateDemoSession">
+                ⚡ Generate Valid Session for Table 07
+            </button>
+        </div>
+
+    </div>
+
+    <!-- PWA Logic Script -->
+    <script src="/qr-order.js"></script>
+</body>
+</html>

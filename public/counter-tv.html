@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter Token Display | DUM HOUSE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-tv: #050811;
+            --card-ready: rgba(16, 185, 129, 0.08);
+            --card-ready-border: rgba(16, 185, 129, 0.4);
+            --emerald: #10B981;
+            --emerald-bright: #34D399;
+            --emerald-glow: rgba(16, 185, 129, 0.45);
+            --amber: #F59E0B;
+            --amber-bright: #FBBF24;
+            --amber-glow: rgba(245, 158, 11, 0.35);
+            --text-main: #FFFFFF;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-tv);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* Top TV Header */
+        header.tv-header {
+            height: 80px;
+            background: rgba(15, 23, 42, 0.85);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            backdrop-filter: blur(16px);
+        }
+
+        .tv-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .tv-title h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FF9431 0%, #FFB800 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tv-title span {
+            background: rgba(255, 122, 0, 0.2);
+            color: #FFA048;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .tv-header-right {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .digital-clock {
+            font-family: 'Outfit', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            color: #F8FAFC;
+            letter-spacing: 1px;
+        }
+
+        .audio-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFF;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .audio-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 2-Column TV Split Grid */
+        main.tv-split {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            height: calc(100vh - 80px);
+        }
+
+        /* LEFT COLUMN: READY / NOW SERVING */
+        .column-ready {
+            background: radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 60%);
+            border-right: 2px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 40px;
+        }
+
+        .col-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .col-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .col-header.ready h2 {
+            color: var(--emerald-bright);
+        }
+
+        .col-header.preparing h2 {
+            color: var(--amber-bright);
+        }
+
+        .ready-tokens-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            align-content: start;
+            overflow-y: auto;
+        }
+
+        .token-card {
+            background: rgba(16, 185, 129, 0.12);
+            border: 2px solid var(--emerald);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 32px var(--emerald-glow);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: cardPop 0.5s ease;
+        }
+
+        @keyframes cardPop {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .token-card.newly-called {
+            animation: flashHighlight 1.5s infinite;
+        }
+
+        @keyframes flashHighlight {
+            0% { border-color: #FFF; box-shadow: 0 0 40px #FFF; }
+            50% { border-color: var(--emerald); box-shadow: 0 0 32px var(--emerald-bright); }
+            100% { border-color: #FFF; box-shadow: 0 0 40px #FFF; }
+        }
+
+        .token-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1;
+            color: #FFFFFF;
+            text-shadow: 0 0 24px rgba(16, 185, 129, 0.8);
+        }
+
+        .token-type-badge {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--emerald-bright);
+            margin-top: 10px;
+        }
+
+        /* RIGHT COLUMN: PREPARING */
+        .column-preparing {
+            background: radial-gradient(circle at 70% 30%, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 40px;
+        }
+
+        .prep-tokens-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            align-content: start;
+            overflow-y: auto;
+        }
+
+        .prep-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 18px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prep-card .prep-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--amber-bright);
+        }
+
+        .prep-card .prep-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Audio alert banner */
+        #audio-unlock-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 122, 0, 0.95);
+            color: #FFF;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(255, 122, 0, 0.4);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <header class="tv-header">
+        <div class="tv-title">
+            <h1>DUM HOUSE</h1>
+            <span>COUNTER ORDER DISPLAY</span>
+        </div>
+        <div class="tv-header-right">
+            <button class="audio-btn" id="btn-sound-toggle">🔊 Audio Alerts ON</button>
+            <div class="digital-clock" id="live-clock">18:45:20</div>
+        </div>
+    </header>
+
+    <main class="tv-split">
+        <!-- LEFT: NOW SERVING (READY) -->
+        <section class="column-ready">
+            <div class="col-header ready">
+                <h2><span>🟢</span> NOW SERVING / READY</h2>
+                <span style="font-size: 14px; color: var(--emerald-bright); font-weight: 700;" id="ready-count">3 TOKENS</span>
+            </div>
+            <div class="ready-tokens-grid" id="ready-tokens-grid">
+                <div class="token-card newly-called">
+                    <div class="token-number">A-101</div>
+                    <div class="token-type-badge">TAKEAWAY • COUNTER 1</div>
+                </div>
+                <div class="token-card">
+                    <div class="token-number">D-017</div>
+                    <div class="token-type-badge">DELIVERY PICKUP</div>
+                </div>
+                <div class="token-card">
+                    <div class="token-number">A-102</div>
+                    <div class="token-type-badge">TAKEAWAY • COUNTER 2</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT: PREPARING -->
+        <section class="column-preparing">
+            <div class="col-header preparing">
+                <h2><span>🟡</span> PREPARING</h2>
+                <span style="font-size: 14px; color: var(--amber-bright); font-weight: 700;" id="prep-count">4 TOKENS</span>
+            </div>
+            <div class="prep-tokens-grid" id="prep-tokens-grid">
+                <div class="prep-card">
+                    <div class="prep-number">A-103</div>
+                    <div class="prep-time">Est: 5–10m</div>
+                </div>
+                <div class="prep-card">
+                    <div class="prep-number">D-019</div>
+                    <div class="prep-time">Est: 10–15m</div>
+                </div>
+                <div class="prep-card">
+                    <div class="prep-number">A-104</div>
+                    <div class="prep-time">Est: 15–20m</div>
+                </div>
+                <div class="prep-card">
+                    <div class="prep-number">W-088</div>
+                    <div class="prep-time">Est: 5–10m</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="audio-unlock-banner">Tap anywhere to enable sound alerts for token calls 🔔</div>
+
+    <script src="/counter-tv.js"></script>
+</body>
+</html>

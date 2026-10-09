@@ -1,0 +1,1074 @@
+/* Kitchen Display System (KDS) - Android Tablet & Touch Optimized Styling */
+
+:root {
+    --bg-kds: #070a11;
+    --bg-surface: #0f1523;
+    --bg-card: #151d30;
+    --bg-card-hover: #1b253d;
+    --bg-card-subtle: #1c263d;
+    
+    --border-color: #263352;
+    --border-subtle: #1c253b;
+    --border-highlight: #3b82f6;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --color-curry: #f97316;
+    --color-tandoor: #e11d48;
+    --color-grill: #ef4444;
+    --color-wok: #06b6d4;
+    --color-packing: #8b5cf6;
+    
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: #3b82f6;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-full: 9999px;
+
+    --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --shadow-glow-amber: 0 0 25px rgba(245, 158, 11, 0.35);
+    --shadow-glow-red: 0 0 30px rgba(239, 68, 68, 0.45);
+    --shadow-glow-green: 0 0 25px rgba(16, 185, 129, 0.35);
+
+    --font-sans: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-kds);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+/* ==========================================================================
+   APP SHELL CONTAINER
+   ========================================================================== */
+.kds-app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-kds);
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   HEADER & TOP CONTROLS (Android Tablet Optimized)
+   ========================================================================== */
+.kds-header {
+    background-color: var(--bg-surface);
+    border-bottom: 2px solid var(--border-color);
+    padding: 10px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+}
+
+.kds-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.brand-text h1 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1.1;
+}
+
+.brand-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-success);
+    box-shadow: 0 0 10px var(--color-success);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* Urgency Summary KPIs */
+.kds-kpis {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kpi-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid var(--border-color);
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.kpi-pill.on-time { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+.kpi-pill.warning { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+.kpi-pill.late { color: #f87171; border-color: rgba(248, 113, 113, 0.4); animation: latePulse 1.5s infinite; }
+
+@keyframes latePulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+    50% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+}
+
+/* Header Action Buttons */
+.kds-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.touch-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    transition: all 0.15s ease-in-out;
+}
+
+.touch-action-btn:active {
+    transform: scale(0.97);
+}
+
+.touch-action-btn.btn-rush {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    border: none;
+    font-weight: 800;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.touch-action-btn.btn-recall {
+    background: #1e293b;
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+
+.touch-action-btn.btn-86 {
+    background: #1e293b;
+    border-color: #f43f5e;
+    color: #fb7185;
+}
+
+.touch-action-btn.btn-pos {
+    background: #1e293b;
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.touch-action-btn.btn-icon-only {
+    width: 48px;
+    padding: 0;
+}
+
+/* ==========================================================================
+   STATION FILTER TABS (Curry, Tandoor, Grill, Wok, Packing)
+   ========================================================================== */
+.station-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 2px;
+}
+
+.station-tabs-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.station-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 52px;
+    padding: 0 20px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.station-tab .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: var(--radius-full);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.station-tab:active {
+    transform: scale(0.96);
+}
+
+.station-tab.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-color: #60a5fa;
+    color: #ffffff;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.45);
+}
+
+.station-tab.active .tab-count {
+    background-color: #ffffff;
+    color: #1e3a8a;
+}
+
+/* Specific station accents */
+.station-tab[data-station="CURRY"].active {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    border-color: #fb923c;
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.45);
+}
+.station-tab[data-station="TANDOOR"].active {
+    background: linear-gradient(135deg, #e11d48, #be123c);
+    border-color: #fda4af;
+    box-shadow: 0 4px 20px rgba(225, 29, 72, 0.45);
+}
+.station-tab[data-station="GRILL"].active {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border-color: #fca5a5;
+    box-shadow: 0 4px 20px rgba(220, 38, 38, 0.45);
+}
+.station-tab[data-station="WOK"].active {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    border-color: #67e8f9;
+    box-shadow: 0 4px 20px rgba(8, 145, 178, 0.45);
+}
+.station-tab[data-station="PACKING"].active {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    border-color: #c4b5fd;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45);
+}
+
+/* Live 86 Alert Bar */
+.kds-86-banner {
+    background: linear-gradient(90deg, #7f1d1d, #991b1b);
+    border-bottom: 1px solid #ef4444;
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #fecaca;
+}
+
+.kds-86-banner.hidden {
+    display: none;
+}
+
+/* ==========================================================================
+   MAIN TICKETS WORKSPACE & GRID
+   ========================================================================== */
+.kds-board {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    background-color: var(--bg-kds);
+}
+
+.kds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+/* Empty State */
+.kds-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.empty-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    margin-bottom: 8px;
+}
+
+.empty-desc {
+    font-size: 1rem;
+    max-width: 420px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   TICKET CARD DESIGN (High Contrast, Large Touch Targets)
+   ========================================================================== */
+.ticket-card {
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Urgency Color Accents */
+.ticket-card.urgency-normal {
+    border-top: 6px solid var(--color-success);
+}
+
+.ticket-card.urgency-amber {
+    border-top: 6px solid var(--color-warning);
+    border-color: #854d0e;
+    box-shadow: var(--shadow-glow-amber);
+    animation: amberBorderPulse 2.5s infinite;
+}
+
+.ticket-card.urgency-late {
+    border-top: 6px solid var(--color-danger);
+    border-color: #991b1b;
+    box-shadow: var(--shadow-glow-red);
+    animation: redBorderPulse 1.5s infinite;
+}
+
+@keyframes amberBorderPulse {
+    0%, 100% { border-color: #854d0e; }
+    50% { border-color: #f59e0b; }
+}
+
+@keyframes redBorderPulse {
+    0%, 100% { border-color: #991b1b; }
+    50% { border-color: #ef4444; }
+}
+
+/* HELD state */
+.ticket-card.held-state {
+    opacity: 0.75;
+    border-top: 6px solid #a855f7;
+    filter: saturate(0.8);
+}
+
+.held-overlay-banner {
+    background: #6b21a8;
+    color: #f3e8ff;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    letter-spacing: 0.05em;
+}
+
+/* Card Header Strip */
+.ticket-header {
+    background-color: var(--bg-surface);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ticket-code {
+    font-size: 1.65rem;
+    font-weight: 900;
+    font-family: var(--font-mono);
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.channel-badge {
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.channel-badge.delivery {
+    background-color: #581c87;
+    color: #e9d5ff;
+    border: 1px solid #7e22ce;
+}
+
+.channel-badge.dine_in {
+    background-color: #064e3b;
+    color: #a7f3d0;
+    border: 1px solid #059669;
+}
+
+.channel-badge.walk_in {
+    background-color: #78350f;
+    color: #fde68a;
+    border: 1px solid #d97706;
+}
+
+.channel-badge.qr {
+    background-color: #1e3a8a;
+    color: #bfdbfe;
+    border: 1px solid #2563eb;
+}
+
+/* Large Countdown Timer */
+.timer-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.countdown-timer {
+    font-family: var(--font-mono);
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.urgency-normal .countdown-timer { color: #34d399; }
+.urgency-amber .countdown-timer { color: #fbbf24; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.urgency-late .countdown-timer { color: #f87171; text-shadow: 0 0 12px rgba(239, 68, 68, 0.6); animation: lateBlink 1s infinite; }
+
+@keyframes lateBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Station & Multi-Station Meta Strip */
+.ticket-station-strip {
+    padding: 8px 14px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.station-badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.station-tag {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+}
+
+.station-tag.curry { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
+.station-tag.tandoor { background: rgba(225, 29, 72, 0.2); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.4); }
+.station-tag.grill { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+.station-tag.wok { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+.station-tag.packing { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); }
+
+.order-kot-number {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+/* Completion percentage progress */
+.completion-progress-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.completion-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.completion-percentage-val {
+    color: #38bdf8;
+    font-weight: 800;
+}
+
+.progress-track {
+    width: 100%;
+    height: 6px;
+    background-color: #1e293b;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   TICKET ITEMS LIST
+   ========================================================================== */
+.ticket-items-list {
+    padding: 14px 14px 8px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.ticket-item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.15s ease;
+}
+
+.ticket-item-row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.item-qty {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #fbbf24;
+    font-family: var(--font-mono);
+    min-width: 32px;
+    line-height: 1.2;
+}
+
+.item-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.item-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.25;
+}
+
+.item-modifier {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.item-note {
+    font-size: 0.8rem;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.ticket-item-row.is-86 .item-name {
+    text-decoration: line-through;
+    color: #ef4444;
+}
+
+.ticket-item-row.is-86::after {
+    content: "86'D";
+    color: #fca5a5;
+    background: #991b1b;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   ALLERGY WARNING STRIP (High Impact Visual Notice)
+   ========================================================================== */
+.allergy-alert-box {
+    margin: 8px 14px;
+    background: linear-gradient(135deg, #7f1d1d, #450a0a);
+    border: 2px solid #ef4444;
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: allergyGlow 2s infinite;
+}
+
+@keyframes allergyGlow {
+    0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+}
+
+.allergy-icon {
+    font-size: 1.4rem;
+    color: #fecaca;
+    flex-shrink: 0;
+}
+
+.allergy-text {
+    font-size: 0.92rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+/* Rider ETA Box (Delivery) */
+.rider-eta-box {
+    margin: 4px 14px 10px 14px;
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px dashed rgba(168, 85, 247, 0.5);
+    border-radius: var(--radius-md);
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #d8b4fe;
+}
+
+.rider-eta-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rider-eta-time {
+    font-family: var(--font-mono);
+    font-size: 0.98rem;
+    background: rgba(139, 92, 246, 0.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* ==========================================================================
+   TICKET TOUCH CONTROLS (MASSIVE ONE-TAP BUMP, NO TINY CONTROLS)
+   ========================================================================== */
+.ticket-actions-bar {
+    padding: 10px 14px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+}
+
+/* MASSIVE BUMP BUTTON */
+.bump-btn {
+    width: 100%;
+    height: 58px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 900;
+    font-family: var(--font-sans);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.bump-btn:active {
+    transform: scale(0.97);
+    filter: brightness(0.9);
+}
+
+.secondary-actions-row {
+    display: flex;
+    gap: 8px;
+}
+
+.ticket-sub-btn {
+    flex: 1;
+    height: 44px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.ticket-sub-btn:active {
+    transform: scale(0.97);
+}
+
+.ticket-sub-btn.hold-btn {
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.ticket-sub-btn.hold-btn.active {
+    background-color: #854d0e;
+    color: #fef08a;
+    border-color: #facc15;
+}
+
+.ticket-sub-btn.print-btn {
+    color: #94a3b8;
+}
+
+/* ==========================================================================
+   MODALS & DRAWERS (Recall, 86 Manager, Thermal Print)
+   ========================================================================== */
+.kds-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+.kds-modal-overlay.hidden {
+    display: none;
+}
+
+.kds-modal-card {
+    background-color: var(--bg-surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 640px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+}
+
+.kds-modal-header {
+    padding: 16px 20px;
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kds-modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.kds-modal-close {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kds-modal-close:active {
+    transform: scale(0.95);
+}
+
+.kds-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* 86 List Items */
+.item-86-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.item-86-info h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.item-86-info span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.toggle-switch {
+    width: 64px;
+    height: 36px;
+    background-color: #10b981;
+    border-radius: var(--radius-full);
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-switch::after {
+    content: "";
+    width: 28px;
+    height: 28px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    transition: transform 0.2s ease;
+}
+
+.toggle-switch.is-86 {
+    background-color: #ef4444;
+}
+
+.toggle-switch.is-86::after {
+    transform: translateX(-28px);
+}
+
+/* Recall items list */
+.recall-item-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.recall-btn {
+    height: 48px;
+    padding: 0 20px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* Thermal Receipt Printable Preview */
+.thermal-slip-card {
+    background: #ffffff;
+    color: #000000;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 24px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 360px;
+    margin: 0 auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.thermal-slip-card .slip-center {
+    text-align: center;
+    font-weight: bold;
+}
+
+.thermal-slip-card .slip-hr {
+    border-top: 1px dashed #000;
+    margin: 10px 0;
+}
+
+.slip-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+/* Toast Alerts */
+.kds-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.kds-toast {
+    background-color: #1e293b;
+    border-left: 6px solid var(--color-success);
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    pointer-events: auto;
+    animation: toastSlideIn 0.3s ease;
+}
+
+.kds-toast.warning { border-left-color: var(--color-warning); }
+.kds-toast.error { border-left-color: var(--color-danger); }
+
+@keyframes toastSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Tablet Media Queries */
+@media (max-width: 900px) {
+    .kds-grid {
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+        gap: 12px;
+    }
+    .ticket-code {
+        font-size: 1.4rem;
+    }
+    .countdown-timer {
+        font-size: 1.25rem;
+    }
+    .bump-btn {
+        height: 52px;
+        font-size: 1.15rem;
+    }
+}

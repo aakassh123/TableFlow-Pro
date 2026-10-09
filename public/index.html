@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUM HOUSE - Restaurant Operating System</title>
+    <meta name="description" content="Next-Generation Unified Restaurant Operating System: POS, Orders, Tables, Kitchen & Management.">
+    <!-- Google Fonts: Inter (UI font) & Manrope (Headings) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="app" class="app-shell">
+        <!-- ================================================================== -->
+        <!-- 1. PERSISTENT APPLICATION SHELL: MINIMAL LEFT SIDEBAR             -->
+        <!-- ================================================================== -->
+        <aside class="app-sidebar" aria-label="Main Navigation">
+            <div class="sidebar-brand">
+                <div class="brand-glyph">DH</div>
+                <div class="brand-info">
+                    <span class="brand-name">DUM HOUSE</span>
+                    <span class="brand-tag">OS v2.4</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item" data-view="home" id="nav-btn-home" title="Operational Overview">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Home</span>
+                </button>
+                <button class="nav-item active" data-view="pos" id="nav-btn-pos" title="Take New Order">
+                    <span class="nav-icon">⚡</span>
+                    <span class="nav-label">New Order</span>
+                </button>
+                <button class="nav-item" data-view="orders" id="nav-btn-orders" title="Active Orders & Billing">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Orders</span>
+                    <span class="nav-badge" id="sidebar-orders-badge">4</span>
+                </button>
+                <button class="nav-item" data-view="tables" id="nav-btn-tables" title="Floor Layout & Tables">
+                    <span class="nav-icon">🪑</span>
+                    <span class="nav-label">Tables</span>
+                    <span class="nav-badge-dot" id="sidebar-tables-indicator"></span>
+                </button>
+                <button class="nav-item" data-view="kitchen" id="nav-btn-kitchen" title="Kitchen Display System">
+                    <span class="nav-icon">🍳</span>
+                    <span class="nav-label">Kitchen</span>
+                    <span class="nav-badge warm" id="sidebar-kds-badge">3</span>
+                </button>
+                <button class="nav-item" data-view="more" id="nav-btn-more" title="Inventory, Staff & Reports">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-label">More</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="nav-item settings-item" id="nav-btn-settings" title="Manager Security & Settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </button>
+                <div class="sidebar-shift-card">
+                    <div class="shift-dot"></div>
+                    <div class="shift-text">
+                        <span class="shift-cashier" id="sidebar-user-name">Ramesh Kumar</span>
+                        <span class="shift-title">Shift #1 • Indiranagar</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ================================================================== -->
+        <!-- 2. MAIN APPLICATION WORKSPACE                                      -->
+        <!-- ================================================================== -->
+        <div class="app-main-container">
+            <!-- PERSISTENT TOP APP HEADER -->
+            <header class="app-header">
+                <div class="header-left">
+                    <div class="view-breadcrumb">
+                        <span class="root-crumb">DUM HOUSE</span>
+                        <span class="crumb-separator">/</span>
+                        <h1 class="active-crumb-title" id="header-view-title">New Order</h1>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <!-- Global Command Search (Ctrl + K) -->
+                    <button class="global-search-btn" id="global-search-trigger" title="Search dishes, tables, orders (Ctrl+K)">
+                        <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <span class="search-placeholder">Search dishes, tables, orders...</span>
+                        <kbd class="search-kbd">Ctrl K</kbd>
+                    </button>
+                </div>
+
+                <div class="header-right">
+                    <!-- Held / Saved Draft Orders Recall -->
+                    <button class="held-orders-chip" id="btn-view-held-orders" title="View / Recall Saved Draft Orders">
+                        <span class="held-icon">⏸</span>
+                        <span class="held-label">Held</span>
+                        <span class="held-count-badge" id="header-held-count">0</span>
+                    </button>
+
+                    <!-- Realtime & Offline Edge Mode Toggle -->
+                    <div class="system-status-chip online" id="system-status-chip" title="Click to test Offline Edge Mode & Outbox Sync">
+                        <span class="status-indicator"></span>
+                        <span class="status-label" id="system-status-label">Online</span>
+                        <span class="status-queue-badge hidden" id="system-status-queue">0</span>
+                    </div>
+
+                    <div class="role-selector-wrap">
+                        <select id="user-role-selector" class="role-select" aria-label="Simulate Staff Role">
+                            <option value="CASHIER">Receptionist / Cashier</option>
+                            <option value="CHEF">Head Chef (Kitchen)</option>
+                            <option value="MANAGER">Store Manager</option>
+                        </select>
+                    </div>
+
+                    <button class="quick-header-action-btn hidden" id="header-new-order-quick" title="Start a fresh order">
+                        <span>+ New Order</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- WORKSPACE VIEWS CONTAINER -->
+            <main class="app-workspaces">
+                
+                <!-- ========================================================== -->
+                <!-- VIEW 1: OPERATIONAL DASHBOARD (HOME)                       -->
+                <!-- ========================================================== -->
+                <section id="view-home" class="workspace-view hidden">
+                    <div class="dashboard-scroll-wrap">
+                        <div class="dashboard-banner">
+                            <div>
+                                <h2 class="dash-welcome">Good Afternoon, Ramesh</h2>
+                                <p class="dash-subtitle">Here is what's happening at Indiranagar outlet right now.</p>
+                            </div>
+                            <div class="dash-actions-row">
+                                <button class="primary-btn" id="dash-btn-start-order">⚡ Start New Order</button>
+                                <button class="secondary-btn" id="dash-btn-view-tables">🪑 View Tables (6)</button>
+                                <button class="secondary-btn" id="dash-btn-open-kds">🍳 Kitchen Screen</button>
+                            </div>
+                        </div>
+
+                        <!-- 5 Clean Operational KPI Cards -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-title">Today's Sales</span>
+                                <span class="metric-value" id="kpi-today-sales">₹48,420</span>
+                                <span class="metric-sub text-green">↑ 14% vs yesterday</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-title">Orders Placed</span>
+                                <span class="metric-value" id="kpi-orders-count">126</span>
+                                <span class="metric-sub">94 Dine-in • 32 Delivery/QSR</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-title">Tables Occupied</span>
+                                <span class="metric-value" id="kpi-tables-ratio">3 / 6</span>
+                                <span class="metric-sub" id="kpi-tables-sub">50% floor capacity</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-title">Pending Payment</span>
+                                <span class="metric-value text-amber" id="kpi-pending-bill">₹1,148</span>
+                                <span class="metric-sub">2 tables waiting for settlement</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-title">Kitchen Load</span>
+                                <span class="metric-value" id="kpi-kitchen-active">3 Active</span>
+                                <span class="metric-sub text-green">Avg prep time: 11 mins</span>
+                            </div>
+                        </div>
+
+                        <!-- Actionable "ATTENTION REQUIRED" Section -->
+                        <div class="attention-section">
+                            <div class="section-header-row">
+                                <h3 class="section-title">Attention Required</h3>
+                                <span class="section-badge attention-badge">3 items</span>
+                            </div>
+                            <div class="attention-grid">
+                                <div class="attention-card warning" id="att-card-1">
+                                    <div class="att-icon">⏱️</div>
+                                    <div class="att-body">
+                                        <h4>Order #ORD-20261008-0001 Exceeding Target Time</h4>
+                                        <p>Table T-01 has been preparing for 16 mins (Tandoor station). Target was 12 mins.</p>
+                                    </div>
+                                    <button class="att-btn" id="att-btn-kds">View KDS</button>
+                                </div>
+                                <div class="attention-card info" id="att-card-2">
+                                    <div class="att-icon">💳</div>
+                                    <div class="att-body">
+                                        <h4>Table T-03 Bill Requested</h4>
+                                        <p>Guest requested final settlement for ₹640 (Dine-in). Ready for payment.</p>
+                                    </div>
+                                    <button class="att-btn" id="att-btn-settle">Collect Payment</button>
+                                </div>
+                                <div class="attention-card alert" id="att-card-3">
+                                    <div class="att-icon">📦</div>
+                                    <div class="att-body">
+                                        <h4>Low Stock Threshold Reached</h4>
+                                        <p>Paneer stock is at 18 kg (Reorder level: 25 kg). Review purchase orders.</p>
+                                    </div>
+                                    <button class="att-btn" id="att-btn-stock">View Stock</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Orders Feed Snapshot -->
+                        <div class="dashboard-orders-preview">
+                            <div class="section-header-row">
+                                <h3 class="section-title">Recent Orders</h3>
+                                <button class="link-btn" id="dash-see-all-orders">View All Orders →</button>
+                            </div>
+                            <div class="recent-orders-table-wrap">
+                                <table class="rop-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Channel / Table</th>
+                                            <th>Items</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dash-recent-orders-tbody">
+                                        <!-- Injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================== -->
+                <!-- VIEW 2: NEW ORDER (FOCUSED POS WORKFLOW + INLINE PAYMENT)   -->
+                <!-- ========================================================== -->
+                <section id="view-pos" class="workspace-view active">
+                    <div class="pos-workspace-split">
+                        
+                        <!-- LEFT & CENTER: ORDER WORKFLOW & MENU -->
+                        <div class="pos-menu-column">
+                            
+                            <!-- PROGRESSIVE DISCLOSURE: ORDER TYPE SELECTOR -->
+                            <div class="order-context-bar">
+                                <div class="workflow-tabs" id="pos-channel-tabs">
+                                    <button class="workflow-tab active" data-channel="DINE_IN" id="channel-dine-in">
+                                        <span class="tab-emoji">🍽️</span>
+                                        <span class="tab-name">Dine-in</span>
+                                    </button>
+                                    <button class="workflow-tab" data-channel="WALK_IN" id="channel-walk-in">
+                                        <span class="tab-emoji">🛍️</span>
+                                        <span class="tab-name">Takeaway</span>
+                                    </button>
+                                    <button class="workflow-tab" data-channel="DELIVERY" id="channel-delivery">
+                                        <span class="tab-emoji">🛵</span>
+                                        <span class="tab-name">Delivery</span>
+                                    </button>
+                                </div>
+
+                                <!-- Adaptive Context: Dine-in Table Selector -->
+                                <div class="adaptive-context-row" id="context-dinein-controls">
+                                    <div class="context-input-group">
+                                        <label for="table-select">Table</label>
+                                        <select id="table-select" class="clean-select" aria-label="Select Table">
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                    </div>
+                                    <div class="context-input-group">
+                                        <label>Guests</label>
+                                        <div class="guest-selector-pills" id="guest-pills">
+                                            <button class="guest-pill" data-count="1">1</button>
+                                            <button class="guest-pill active" data-count="2">2</button>
+                                            <button class="guest-pill" data-count="3">3</button>
+                                            <button class="guest-pill" data-count="4">4</button>
+                                            <button class="guest-pill" data-count="6">6+</button>
+                                        </div>
+                                    </div>
+                                    <div class="context-input-group">
+                                        <label for="server-select">Server / Waiter</label>
+                                        <select id="server-select" class="clean-select" aria-label="Select Server">
+                                            <option value="priya">Priya (Captain)</option>
+                                            <option value="rahul">Rahul (Server)</option>
+                                            <option value="vikram">Vikram (Server)</option>
+                                            <option value="unassigned">Unassigned</option>
+                                        </select>
+                                    </div>
+                                    <div class="context-input-group flex-1">
+                                        <label for="dinein-cust-input">Customer (Optional)</label>
+                                        <input type="text" id="dinein-cust-input" class="clean-input" placeholder="e.g. Rahul Sharma (+91 98765...)" />
+                                    </div>
+                                </div>
+
+                                <!-- Adaptive Context: Takeaway Controls (Hidden when Dine-in or Delivery) -->
+                                <div class="adaptive-context-row hidden" id="context-takeaway-controls">
+                                    <div class="context-input-group flex-1">
+                                        <label for="cust-name-input">Customer Name / Phone</label>
+                                        <input type="text" id="cust-name-input" class="clean-input" placeholder="e.g. Rahul Sharma (+91 98765...)" />
+                                    </div>
+                                    <div class="context-input-group">
+                                        <label for="takeaway-distance-input">Distance (km)</label>
+                                        <div style="display: flex; gap: 4px; align-items: center;">
+                                            <input type="number" id="takeaway-distance-input" class="clean-input" style="width: 72px; font-weight: 700; color: #92400e;" value="1.0" min="0" max="25" step="0.5" />
+                                            <span style="font-size: 11px; color: var(--text-muted);">km</span>
+                                        </div>
+                                    </div>
+                                    <div class="context-input-group">
+                                        <label>Quick Presets</label>
+                                        <div style="display: flex; gap: 4px;" id="distance-preset-chips">
+                                            <button type="button" class="dist-chip active" data-dist="1.0" style="padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid #d97706; background: #fef3c7; color: #92400e; font-weight: 700; cursor: pointer;">1.0 km</button>
+                                            <button type="button" class="dist-chip" data-dist="2.5" style="padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border-default); background: var(--surface-bg); color: var(--text-secondary); cursor: pointer;">2.5 km</button>
+                                            <button type="button" class="dist-chip" data-dist="0" style="padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border-default); background: var(--surface-bg); color: var(--text-secondary); cursor: pointer;">At Counter</button>
+                                        </div>
+                                    </div>
+                                    <div class="context-input-group">
+                                        <label>Order Token</label>
+                                        <span class="context-preview-pill" id="takeaway-token-preview">Token #15</span>
+                                    </div>
+                                </div>
+
+                                <!-- Adaptive Context: Delivery Controls (Hidden when Dine-in or Takeaway) -->
+                                <div class="adaptive-context-row hidden" id="context-delivery-controls">
+                                    <div class="context-input-group flex-1">
+                                        <label for="delivery-cust-input">Customer Details</label>
+                                        <input type="text" id="delivery-cust-input" class="clean-input" placeholder="e.g. Anita Desai (+91 98111...)" />
+                                    </div>
+                                    <div class="context-input-group flex-1">
+                                        <label for="delivery-addr-input">Delivery Address</label>
+                                        <input type="text" id="delivery-addr-input" class="clean-input" placeholder="Flat 402, Royal Palms, Indiranagar" />
+                                    </div>
+                                    <div class="context-input-group">
+                                        <label for="delivery-partner-select">Channel Partner</label>
+                                        <select id="delivery-partner-select" class="clean-select">
+                                            <option value="DIRECT">Direct Store Fleet</option>
+                                            <option value="SWIGGY">Swiggy Delivery</option>
+                                            <option value="ZOMATO">Zomato Delivery</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MENU SEARCH & CATEGORY BAR -->
+                            <div class="menu-control-bar">
+                                <div class="menu-search-box">
+                                    <svg class="search-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" id="menu-search-input" placeholder="Search menu items..." autocomplete="off" />
+                                    <button class="search-clear-btn hidden" id="search-clear-btn">×</button>
+                                </div>
+
+                                <!-- Veg / Non-Veg Diet Toggle -->
+                                <div class="diet-toggle-group">
+                                    <button class="diet-toggle-btn active" data-diet="ALL" id="diet-filter-all">All</button>
+                                    <button class="diet-toggle-btn" data-diet="VEG" id="diet-filter-veg">
+                                        <span class="fssai-symbol veg"></span> Veg
+                                    </button>
+                                    <button class="diet-toggle-btn" data-diet="NON_VEG" id="diet-filter-nonveg">
+                                        <span class="fssai-symbol nonveg"></span> Non-Veg
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- CATEGORY SCROLL PILLS -->
+                            <div class="category-pills-scroll" id="categories-nav-list">
+                                <!-- Dynamically injected via JS -->
+                            </div>
+
+                            <!-- MENU ITEMS GRID -->
+                            <div class="pos-menu-grid" id="menu-items-grid">
+                                <!-- Dynamic Clean Dish Cards injected via JS -->
+                            </div>
+                        </div>
+
+                        <!-- ================================================== -->
+                        <!-- RIGHT PANEL: CURRENT ORDER & INLINE PAYMENT        -->
+                        <!-- ================================================== -->
+                        <div class="pos-cart-column" id="pos-order-panel">
+                            
+                            <!-- 1. CART VIEW STATE -->
+                            <div class="order-panel-state" id="panel-state-cart">
+                                <div class="order-panel-header">
+                                    <div class="panel-header-titles">
+                                        <h2 class="order-panel-heading">Current Order</h2>
+                                        <span class="order-panel-badge" id="cart-total-badge">2 items</span>
+                                    </div>
+                                    <div class="panel-header-actions">
+                                        <button class="text-action-btn hold-btn" id="btn-hold-order" title="Hold / save current draft order">⏸ Hold</button>
+                                        <button class="text-action-btn" id="btn-add-order-note" title="Add cooking instructions">Note</button>
+                                        <button class="text-action-btn" id="btn-apply-discount" title="Apply discount">Discount</button>
+                                        <button class="text-action-btn" id="btn-split-bill" title="Split bill between guests">Split</button>
+                                        <button class="text-action-btn" id="btn-more-actions" title="Customer, Service Charge & Table">•••</button>
+                                        <button class="text-action-btn danger" id="clear-cart-btn" title="Empty order">Clear</button>
+                                    </div>
+                                </div>
+
+                                <div class="order-target-banner" id="order-target-banner">
+                                    <span class="target-chip channel-chip" id="cart-context-channel">🍽️ DINE-IN</span>
+                                    <span class="target-chip table-chip" id="cart-context-table">Table T-01</span>
+                                    <span class="target-chip guests-chip" id="cart-context-guests">2 Guests</span>
+                                </div>
+
+                                <!-- Scrollable Cart Items List -->
+                                <div class="order-items-list" id="cart-items-list">
+                                    <!-- Dynamic Items injected via JS -->
+                                </div>
+
+                                <!-- Bill Calculation Breakdown -->
+                                <div class="order-bill-summary">
+                                    <div class="summary-line">
+                                        <span class="sum-label">Subtotal</span>
+                                        <span class="sum-val" id="bill-subtotal">₹560.00</span>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="sum-label">Taxes & Charges (5% GST)</span>
+                                        <span class="sum-val" id="bill-tax">₹28.00</span>
+                                    </div>
+                                    <div class="summary-line" id="service-charge-line" style="display:none;">
+                                        <span class="sum-label">Service Charge</span>
+                                        <span class="sum-val" id="bill-service-charge">+₹0.00</span>
+                                    </div>
+                                    <div class="summary-line" id="discount-summary-line" style="display:none;">
+                                        <span class="sum-label text-green">Discount Applied</span>
+                                        <span class="sum-val text-green" id="bill-discount">-₹0.00</span>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="sum-label">Round Off</span>
+                                        <span class="sum-val" id="bill-round-off">₹0.00</span>
+                                    </div>
+                                    <div class="summary-line total-line">
+                                        <span class="total-label">TOTAL</span>
+                                        <span class="total-amount" id="bill-grand-total">₹588.00</span>
+                                    </div>
+
+                                    <!-- Primary Checkout CTA (Transforms into Inline Payment) -->
+                                    <button class="checkout-cta-btn" id="btn-proceed-pay">
+                                        <span class="cta-text">PAY</span>
+                                        <span class="cta-amount" id="btn-total-tag">₹588</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 2. INLINE PAYMENT STATE (TRANSFORMS ORDER PANEL) -->
+                            <div class="order-panel-state hidden" id="panel-state-payment">
+                                <div class="order-panel-header">
+                                    <button class="back-link-btn" id="btn-back-to-cart">← Back to Items</button>
+                                    <h2 class="order-panel-heading">Payment & Settlement</h2>
+                                </div>
+
+                                <div class="inline-payment-body">
+                                    <div class="pay-amount-box">
+                                        <span class="pay-label">Total Amount Due</span>
+                                        <span class="pay-due-val" id="pay-due-display">₹588.00</span>
+                                    </div>
+
+                                    <!-- Payment Method Selector: Cash, UPI, Card, Other, Split -->
+                                    <div class="tender-mode-group">
+                                        <label class="input-label">Select Payment Method</label>
+                                        <div class="tender-grid-extended" id="tender-buttons-group">
+                                            <button class="tender-card-btn active" data-tender="CASH" id="tender-cash">
+                                                <span class="tender-glyph">💵</span>
+                                                <span class="tender-title">Cash</span>
+                                            </button>
+                                            <button class="tender-card-btn" data-tender="UPI" id="tender-upi">
+                                                <span class="tender-glyph">📱</span>
+                                                <span class="tender-title">UPI</span>
+                                            </button>
+                                            <button class="tender-card-btn" data-tender="CARD" id="tender-card">
+                                                <span class="tender-glyph">💳</span>
+                                                <span class="tender-title">Card</span>
+                                            </button>
+                                            <button class="tender-card-btn" data-tender="OTHER" id="tender-other">
+                                                <span class="tender-glyph">🏦</span>
+                                                <span class="tender-title">Other</span>
+                                            </button>
+                                            <button class="tender-card-btn" data-tender="SPLIT" id="tender-split">
+                                                <span class="tender-glyph">✂️</span>
+                                                <span class="tender-title">Split</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mode 1: Cash Calculator / Change Helper -->
+                                    <div class="cash-calculator-box" id="cash-helper-section">
+                                        <label class="input-label">Amount Received</label>
+                                        <div class="amount-received-row">
+                                            <span class="currency-prefix">₹</span>
+                                            <input type="number" id="cash-tendered-input" class="clean-number-input" value="600" />
+                                        </div>
+                                        <div class="quick-cash-chips" id="quick-cash-chips">
+                                            <button class="cash-chip" data-amt="exact">Exact (₹588)</button>
+                                            <button class="cash-chip" data-amt="600">₹600</button>
+                                            <button class="cash-chip" data-amt="1000">₹1,000</button>
+                                            <button class="cash-chip" data-amt="2000">₹2,000</button>
+                                        </div>
+                                        <div class="change-due-banner">
+                                            <span class="change-label">Change to Return</span>
+                                            <span class="change-val text-green" id="cash-change-display">₹12.00</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mode 2: UPI static QR info -->
+                                    <div class="upi-display-box hidden" id="upi-helper-section">
+                                        <div class="qr-placeholder">
+                                            <div class="qr-code-graphic">
+                                                <svg viewBox="0 0 100 100" width="80" height="80">
+                                                    <rect width="100" height="100" fill="#fff" />
+                                                    <rect x="8" y="8" width="28" height="28" fill="#111" />
+                                                    <rect x="14" y="14" width="16" height="16" fill="#fff" />
+                                                    <rect x="18" y="18" width="8" height="8" fill="#111" />
+                                                    <rect x="64" y="8" width="28" height="28" fill="#111" />
+                                                    <rect x="70" y="14" width="16" height="16" fill="#fff" />
+                                                    <rect x="74" y="18" width="8" height="8" fill="#111" />
+                                                    <rect x="8" y="64" width="28" height="28" fill="#111" />
+                                                    <rect x="14" y="70" width="16" height="16" fill="#fff" />
+                                                    <rect x="18" y="74" width="8" height="8" fill="#111" />
+                                                    <rect x="44" y="44" width="14" height="14" fill="#C84B1F" />
+                                                    <rect x="42" y="12" width="12" height="18" fill="#111" />
+                                                    <rect x="64" y="44" width="24" height="10" fill="#111" />
+                                                    <rect x="42" y="66" width="16" height="22" fill="#111" />
+                                                    <rect x="68" y="66" width="22" height="22" fill="#111" />
+                                                </svg>
+                                            </div>
+                                            <span class="qr-label">Scan Dynamic Counter QR Code</span>
+                                            <span class="upi-id-tag">UPI ID: indiranagar@dumhouse</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mode 3: Card EDC terminal reference -->
+                                    <div class="card-display-box hidden" id="card-helper-section">
+                                        <label class="input-label">EDC Terminal Machine Reference (Optional)</label>
+                                        <input type="text" id="card-ref-input" class="clean-input" placeholder="e.g. PineLabs / HDFC Txn #904812" />
+                                        <div class="hint-text" style="font-size:11px; color:var(--text-muted); margin-top:4px;">Swipe or tap card on POS terminal</div>
+                                    </div>
+
+                                    <!-- Mode 4: Other Payment Channels -->
+                                    <div class="other-display-box hidden" id="other-helper-section">
+                                        <label class="input-label">Payment Channel</label>
+                                        <select id="other-tender-type" class="clean-select">
+                                            <option value="CREDIT_LEDGER">Corporate / Hotel Credit Ledger</option>
+                                            <option value="CHEQUE">Corporate Cheque</option>
+                                            <option value="AGGREGATOR_DIRECT">Aggregator Direct Settlement</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Mode 5: Split Payment Calculator -->
+                                    <div class="split-calculator-box hidden" id="split-helper-section">
+                                        <div class="split-breakdown-row">
+                                            <span class="split-breakdown-label">Total Due</span>
+                                            <strong class="split-breakdown-total" id="split-total-due">₹588.00</strong>
+                                        </div>
+
+                                        <div class="split-tender-inputs">
+                                            <div class="split-tender-row">
+                                                <label for="split-cash-input">💵 Cash Amount</label>
+                                                <div class="split-input-field">
+                                                    <span class="prefix">₹</span>
+                                                    <input type="number" id="split-cash-input" class="clean-number-input" value="300" />
+                                                </div>
+                                            </div>
+                                            <div class="split-tender-row">
+                                                <label for="split-upi-input">📱 UPI Amount</label>
+                                                <div class="split-input-field">
+                                                    <span class="prefix">₹</span>
+                                                    <input type="number" id="split-upi-input" class="clean-number-input" value="288" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="split-balance-banner" id="split-balance-banner">
+                                            <span class="balance-label">Remaining Balance</span>
+                                            <span class="balance-val text-green" id="split-remaining-val">₹0.00 (Balanced ✓)</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="payment-actions-bar">
+                                        <button class="secondary-btn" id="btn-cancel-payment">Cancel</button>
+                                        <button class="complete-payment-btn" id="btn-complete-payment">
+                                            <span>Complete Payment</span>
+                                            <span id="btn-pay-confirm-amount">₹588</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. INLINE PAYMENT COMPLETED STATE -->
+                            <div class="order-panel-state hidden" id="panel-state-success">
+                                <div class="payment-success-card">
+                                    <div class="success-check-badge">✓</div>
+                                    <h2 class="success-heading">Payment Successful</h2>
+                                    
+                                    <div class="success-details-card">
+                                        <!-- Token Highlight Banner -->
+                                        <div class="success-token-banner" id="success-token-banner" style="display: flex; justify-content: space-between; align-items: center; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(245, 158, 11, 0.08);">
+                                            <div style="text-align: left;">
+                                                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #b45309; font-weight: 700; display: block;">Customer Digital Token</span>
+                                                <strong id="success-token-display" style="font-size: 22px; font-weight: 800; font-family: var(--font-heading); color: #0f172a; display: block; margin-top: 2px;">TOKEN #15</strong>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <span style="font-size: 11px; color: #64748b; font-weight: 600; display: block;">Estimated Promise Window</span>
+                                                <strong id="success-eta-display" style="font-size: 15px; font-weight: 800; color: #059669; display: block; margin-top: 2px;">10–15 mins</strong>
+                                            </div>
+                                        </div>
+
+                                        <!-- Distance & Smart JIT Transit Analysis Card (Only shown if distance > 0) -->
+                                        <div class="distance-jit-analysis-card" id="success-distance-banner" style="display: none; background: #f0f9ff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 12px; text-align: left;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                                <span style="font-weight: 700; color: #0369a1; display: inline-flex; align-items: center; gap: 6px;">
+                                                    🚗 Transit & JIT Kitchen Scheduling
+                                                </span>
+                                                <span id="success-distance-stat" style="color: #0284c7; font-weight: 700; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; font-size: 11px;">1.0 km · ~6 min transit</span>
+                                            </div>
+                                            <p id="success-jit-explanation" style="color: #1e293b; margin: 0; line-height: 1.45; font-size: 12px;">
+                                                Prep time synced with arrival. Kitchen does NOT freeze or wait idle — other orders continue smoothly without interruption!
+                                            </p>
+                                        </div>
+
+                                        <!-- Financials Breakdown -->
+                                        <div class="detail-row">
+                                            <span>Order Number</span>
+                                            <strong id="success-order-num" style="color: #0f172a;">ORD-000123</strong>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>Channel / Table</span>
+                                            <strong id="success-channel-detail" style="color: #0f172a;">Takeaway · Token #15</strong>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>Amount Paid</span>
+                                            <strong id="success-amount-paid" style="color: #059669; font-size: 16px; font-weight: 800;">₹336.00</strong>
+                                        </div>
+                                        <div class="detail-row" id="success-discount-row">
+                                            <span>Discount Saved</span>
+                                            <strong id="success-discount-saved" style="color: #dc2626; font-weight: 700;">₹0.00</strong>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>Net Sales & GST</span>
+                                            <strong id="success-net-tax" style="color: #0f172a;">Net ₹320.00 + GST ₹16.00</strong>
+                                        </div>
+                                        <div class="detail-row" style="border-top: 1px dashed var(--border-default); padding-top: 8px; margin-top: 4px;">
+                                            <span style="color: #0f172a; font-weight: 700;">Total Income Today</span>
+                                            <strong id="success-cumulative-income" style="color: #0f172a; font-weight: 800; font-size: 15px;">₹43,186.00</strong>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>Payment Method</span>
+                                            <strong id="success-tender-type" style="color: #0f172a; font-weight: 700;">UPI</strong>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4 Clear Action Buttons: Receipt, A4 Invoice, Share, Done -->
+                                    <div class="success-actions-col">
+                                        <button class="print-action-btn primary-print" id="btn-print-receipt">
+                                            <span class="btn-icon">🖨️</span>
+                                            <span class="btn-text">Print Receipt</span>
+                                        </button>
+                                        <button class="print-action-btn secondary-print" id="btn-print-a4-invoice">
+                                            <span class="btn-icon">📄</span>
+                                            <span class="btn-text">Print A4 Invoice</span>
+                                        </button>
+                                        <button class="print-action-btn share-print" id="btn-share-whatsapp">
+                                            <span class="btn-icon">💬</span>
+                                            <span class="btn-text">Share / WhatsApp</span>
+                                        </button>
+                                        <button class="print-action-btn done-print" id="btn-new-order-restart">
+                                            <span class="btn-icon">✓</span>
+                                            <span class="btn-text">Done</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================== -->
+                <!-- VIEW 3: ORDERS WORKSPACE (LIFECYCLES, KOT, TIMELINES)      -->
+                <!-- ========================================================== -->
+                <section id="view-orders" class="workspace-view hidden">
+                    <div class="orders-workspace-layout">
+                        
+                        <!-- Top Orders Filter Bar -->
+                        <div class="orders-subnav-bar">
+                            <div class="orders-filter-tabs" id="orders-filter-tabs">
+                                <button class="filter-tab active" data-filter="ALL">All Orders (<span id="count-all-orders">0</span>)</button>
+                                <button class="filter-tab" data-filter="ACTIVE">Active (<span id="count-active-orders">0</span>)</button>
+                                <button class="filter-tab" data-filter="PREPARING">In Kitchen (<span id="count-kitchen-orders">0</span>)</button>
+                                <button class="filter-tab" data-filter="READY">Ready for Pickup (<span id="count-ready-orders">0</span>)</button>
+                                <button class="filter-tab" data-filter="COMPLETED">Completed</button>
+                            </div>
+                            <div class="orders-search-box">
+                                <input type="text" id="orders-search-input" class="clean-input" placeholder="Search order #, table, customer..." />
+                            </div>
+                        </div>
+
+                        <!-- Orders Grid / Cards List -->
+                        <div class="orders-cards-container" id="orders-cards-grid">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================== -->
+                <!-- VIEW 4: TABLES MANAGEMENT (VISUAL RESTAURANT FLOOR LAYOUT) -->
+                <!-- ========================================================== -->
+                <section id="view-tables" class="workspace-view hidden">
+                    <div class="tables-workspace-layout">
+                        <div class="floor-section-header">
+                            <div class="floor-tabs" id="floor-section-tabs">
+                                <button class="floor-tab active" data-section="ALL">All Tables (6)</button>
+                                <button class="floor-tab" data-section="INDOOR_AC">Indoor • AC (4)</button>
+                                <button class="floor-tab" data-section="GARDEN_TERRACE">Garden • Terrace (2)</button>
+                            </div>
+
+                            <div class="floor-legend">
+                                <span class="legend-item"><span class="legend-dot available"></span> Available</span>
+                                <span class="legend-item"><span class="legend-dot occupied"></span> Occupied</span>
+                                <span class="legend-item"><span class="legend-dot ordering"></span> Ordering</span>
+                                <span class="legend-item"><span class="legend-dot preparing"></span> Preparing</span>
+                                <span class="legend-item"><span class="legend-dot ready"></span> Ready</span>
+                                <span class="legend-item"><span class="legend-dot pending"></span> Payment Pending</span>
+                                <span class="legend-item"><span class="legend-dot paid"></span> Paid</span>
+                            </div>
+                        </div>
+
+                        <!-- Visual Interactive Floor Grid -->
+                        <div class="tables-floor-grid" id="tables-floor-container">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================== -->
+                <!-- VIEW 5: INTEGRATED KITCHEN DISPLAY SYSTEM (KDS)            -->
+                <!-- ========================================================== -->
+                <section id="view-kitchen" class="workspace-view hidden">
+                    <div class="kds-workspace-layout">
+                        <div class="kds-station-filter-bar">
+                            <div class="station-pills-row" id="kds-station-filter-pills">
+                                <button class="station-filter-pill active" data-station="ALL">All Stations</button>
+                                <button class="station-filter-pill" data-station="TANDOOR">Tandoor & Kebab</button>
+                                <button class="station-filter-pill" data-station="CURRY">Curry & Biryani</button>
+                                <button class="station-filter-pill" data-station="WOK">Chinese Wok</button>
+                                <button class="station-filter-pill" data-station="EXPO">Expo Pass</button>
+                            </div>
+                            <div class="kds-meta-clock">
+                                <span class="kds-live-dot"></span>
+                                <span id="kds-live-clock">12:00:00 PM</span>
+                            </div>
+                        </div>
+
+                        <!-- Live Multi-Station KOT Tickets Grid -->
+                        <div class="kds-tickets-grid" id="kds-tickets-container">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================== -->
+                <!-- VIEW 6: MORE (INVENTORY, STAFF, REPORTS & EDGE SYNC)        -->
+                <!-- ========================================================== -->
+                <section id="view-more" class="workspace-view hidden">
+                    <div class="more-workspace-layout">
+                        <div class="more-nav-tabs" id="more-nav-tabs">
+                            <button class="more-tab active" data-sub="inventory">📦 Live Stock Ledger</button>
+                            <button class="more-tab" data-sub="staff">👥 Staff & Shift Access</button>
+                            <button class="more-tab" data-sub="reports">📈 Daily Sales & Z-Report</button>
+                            <button class="more-tab" data-sub="edge">⚡ Edge Node Sync</button>
+                        </div>
+
+                        <div class="more-subcontent-box" id="more-subcontent-box">
+                            <!-- Dynamic sub-pages injected via JS -->
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- SLIDE-OVER DRAWER (SECONDARY ACTIONS & DETAILS)               -->
+        <!-- ============================================================== -->
+        <div class="app-drawer-backdrop hidden" id="app-drawer-backdrop">
+            <aside class="app-slide-drawer" id="app-slide-drawer" role="dialog" aria-modal="true">
+                <div class="drawer-header">
+                    <h3 class="drawer-title" id="drawer-title">Details</h3>
+                    <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close drawer">×</button>
+                </div>
+                <div class="drawer-content" id="drawer-content">
+                    <!-- Dynamic Drawer Content -->
+                </div>
+            </aside>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- GLOBAL COMMAND PALETTE (CTRL + K)                             -->
+        <!-- ============================================================== -->
+        <div class="command-palette-backdrop hidden" id="command-palette-modal">
+            <div class="command-palette-card">
+                <div class="palette-search-row">
+                    <span class="palette-icon">🔍</span>
+                    <input type="text" id="palette-search-input" placeholder="Search dishes, tables, orders, or actions..." autocomplete="off" />
+                    <kbd class="palette-esc">ESC</kbd>
+                </div>
+                <div class="palette-results-list" id="palette-results-list">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TOAST NOTIFICATIONS -->
+        <div class="toast-container" id="toast-container" aria-live="polite"></div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- DEDICATED PRINT AREA: STRICT PRINT ISOLATION (ZERO POS LEAK)   -->
+    <!-- Contains ONLY formatted Thermal Receipt or A4 Tax Invoice     -->
+    <!-- ============================================================== -->
+    <div id="print-area" class="print-area-wrapper">
+        <!-- 1. Dedicated Thermal Receipt Template (58mm / 80mm) -->
+        <div id="print-thermal-receipt" class="thermal-receipt-container"></div>
+        <!-- 2. Dedicated A4 Tax Invoice Template -->
+        <div id="print-a4-invoice" class="a4-invoice-container hidden"></div>
+    </div>
+
+    <!-- Application Script -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>

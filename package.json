@@ -1,0 +1,44 @@
+{
+  "name": "tableflow-pro",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Enterprise-grade Restaurant Operating Platform (ROP) featuring real-time KOT/KDS routing, offline-first edge sync, recipe-driven inventory ledger, and contactless QR ordering.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node scripts/test_invariants.js",
+    "test:auth": "node test/auth_rbac.test.js",
+    "test:inventory": "node test/inventory_engine.test.js",
+    "test:orders": "node test/order_service.test.js",
+    "test:kds": "node test/kds_kitchen_system.test.js",
+    "test:eta": "node test/eta_and_realtime.test.js",
+    "test:realtime": "node test/eta_and_realtime.test.js",
+    "test:outbox": "node test/transactional_outbox.test.js",
+    "test:qr": "node test/qr_ordering.test.js",
+    "test:dashboard": "node test/manager_dashboard.test.js",
+    "test:audit": "node test/production_audit_24.test.js",
+    "test:all": "node scripts/test_invariants.js && node test/auth_rbac.test.js && node test/inventory_engine.test.js && node test/order_service.test.js && node test/kds_kitchen_system.test.js && node test/eta_and_realtime.test.js && node test/transactional_outbox.test.js && node test/qr_ordering.test.js && node test/manager_dashboard.test.js && node test/production_audit_24.test.js",
+    "verify": "node scripts/verify_schema.js",
+    "migrate": "node scripts/migrate.js"
+  },
+  "keywords": [
+    "pos",
+    "kot",
+    "kds",
+    "postgresql",
+    "restaurant",
+    "inventory-ledger"
+  ],
+  "author": "Lead Software Architect",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
+    "pg-mem": "^3.0.14",
+    "supertest": "^7.3.1",
+    "ws": "^8.22.0"
+  }
+}

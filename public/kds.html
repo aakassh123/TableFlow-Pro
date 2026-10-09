@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KDS - Kitchen Display System | DUM HOUSE</title>
+    <meta name="description" content="Station-based high-volume Kitchen Display System (KDS) with live timers, multi-station coordination, 86 item manager, and one-tap bump.">
+    <!-- Google Fonts: Plus Jakarta Sans, Outfit, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="kds.css">
+</head>
+<body>
+    <div id="kds-app" class="kds-app">
+        <!-- TOP APP HEADER -->
+        <header class="kds-header">
+            <div class="kds-top-row">
+                <!-- Brand & Station Status -->
+                <div class="brand-wrapper">
+                    <div class="brand-icon">🍳</div>
+                    <div class="brand-text">
+                        <h1>DUM HOUSE • KDS</h1>
+                        <div class="brand-subtitle">
+                            <span class="pulse-dot"></span>
+                            <span id="active-station-title">ALL STATIONS</span>
+                            <span>•</span>
+                            <span id="live-kitchen-clock">12:00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Urgency KPIs -->
+                <div class="kds-kpis">
+                    <div class="kpi-pill on-time" title="Orders on schedule">
+                        <span>🟢</span>
+                        <span>ON-TIME: <strong id="kpi-ontime-count">0</strong></span>
+                    </div>
+                    <div class="kpi-pill warning" title="Orders approaching target prep time">
+                        <span>🟡</span>
+                        <span>WARNING: <strong id="kpi-warning-count">0</strong></span>
+                    </div>
+                    <div class="kpi-pill late" title="Overdue orders needing rush bump">
+                        <span>🔴</span>
+                        <span>LATE: <strong id="kpi-late-count">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="kds-header-actions">
+                    <button id="btn-rush-order" class="touch-action-btn btn-rush" title="Simulate rush delivery order (D-017 Allergy Peanut)">
+                        <span>⚡</span> Rush Order
+                    </button>
+                    <button id="btn-recall-modal" class="touch-action-btn btn-recall" title="Recall bumped tickets">
+                        <span>🔄</span> Recall (<span id="recalled-count-badge">0</span>)
+                    </button>
+                    <button id="btn-86-modal" class="touch-action-btn btn-86" title="Manage 86 (Out of stock) items">
+                        <span>🚫</span> 86 Items
+                    </button>
+                    <button id="btn-sound-toggle" class="touch-action-btn" title="Toggle audio alert chime">
+                        <span id="sound-icon">🔊</span> <span id="sound-label">Sound ON</span>
+                    </button>
+                    <a href="/" class="touch-action-btn btn-pos" title="Open POS Billing Terminal">
+                        <span>🖥️</span> POS Billing
+                    </a>
+                    <a href="/dashboard" class="touch-action-btn" style="background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #fbbf24; text-decoration: none;" title="Operational Manager Board">
+                        <span>📊</span> Manager Board
+                    </a>
+                    <button id="btn-fullscreen-toggle" class="touch-action-btn btn-icon-only" title="Toggle Fullscreen">
+                        <span>⛶</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STATION FILTER TABS: ALL | CURRY | TANDOOR | GRILL | WOK | PACKING -->
+            <nav class="station-tabs-bar" id="station-tabs-nav" aria-label="Kitchen Stations">
+                <button class="station-tab active" data-station="ALL" id="tab-all">
+                    <span>ALL STATIONS</span>
+                    <span class="tab-count" id="count-all">0</span>
+                </button>
+                <button class="station-tab" data-station="CURRY" id="tab-curry">
+                    <span>🍛 CURRY</span>
+                    <span class="tab-count" id="count-curry">0</span>
+                </button>
+                <button class="station-tab" data-station="TANDOOR" id="tab-tandoor">
+                    <span>🫓 TANDOOR</span>
+                    <span class="tab-count" id="count-tandoor">0</span>
+                </button>
+                <button class="station-tab" data-station="GRILL" id="tab-grill">
+                    <span>🥩 GRILL</span>
+                    <span class="tab-count" id="count-grill">0</span>
+                </button>
+                <button class="station-tab" data-station="WOK" id="tab-wok">
+                    <span>🥢 WOK</span>
+                    <span class="tab-count" id="count-wok">0</span>
+                </button>
+                <button class="station-tab" data-station="PACKING" id="tab-packing">
+                    <span>📦 PACKING</span>
+                    <span class="tab-count" id="count-packing">0</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- LIVE 86 (OUT OF STOCK) ALERT BAR -->
+        <div id="kds-86-banner" class="kds-86-banner hidden" role="alert">
+            <div class="banner-left">
+                <span>⚠️ OUT OF STOCK (86):</span>
+                <span id="kds-86-items-list" class="banner-items">None</span>
+            </div>
+            <button id="btn-open-86-from-banner" class="touch-action-btn" style="height:32px; padding:0 10px; font-size:0.75rem;">Manage 86</button>
+        </div>
+
+        <!-- MAIN TICKETS BOARD -->
+        <main class="kds-board" id="kds-board">
+            <div class="kds-grid" id="kds-tickets-grid">
+                <!-- Dynamically rendered ticket cards -->
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: RECALL BUMPED TICKETS -->
+    <div id="recall-modal" class="kds-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="recall-modal-title">
+        <div class="kds-modal-card">
+            <div class="kds-modal-header">
+                <h3 id="recall-modal-title">🔄 Recall Bumped Kitchen Tickets</h3>
+                <button class="kds-modal-close" id="btn-close-recall" aria-label="Close">×</button>
+            </div>
+            <div class="kds-modal-body">
+                <p style="color:var(--text-secondary); margin-bottom:14px; font-size:0.9rem;">
+                    Recently bumped tickets from the last 60 minutes. Tap <strong>RECALL</strong> to restore a ticket back to its active station display.
+                </p>
+                <div id="recall-tickets-list">
+                    <!-- Recall items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: 86 ITEMS MANAGER (OUT OF STOCK) -->
+    <div id="item-86-modal" class="kds-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="item-86-modal-title">
+        <div class="kds-modal-card">
+            <div class="kds-modal-header">
+                <h3 id="item-86-modal-title">🚫 86 Item Manager (Out of Stock)</h3>
+                <button class="kds-modal-close" id="btn-close-86" aria-label="Close">×</button>
+            </div>
+            <div class="kds-modal-body">
+                <p style="color:var(--text-secondary); margin-bottom:14px; font-size:0.9rem;">
+                    Toggle any item below to immediately 86 (mark Out of Stock) or restore availability across POS and KDS.
+                </p>
+                <div id="item-86-list">
+                    <!-- 86 toggle items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PRINTABLE THERMAL KOT SLIP PREVIEW -->
+    <div id="print-modal" class="kds-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="print-modal-title">
+        <div class="kds-modal-card" style="max-width: 440px;">
+            <div class="kds-modal-header">
+                <h3 id="print-modal-title">🖨️ Thermal KOT Slip</h3>
+                <button class="kds-modal-close" id="btn-close-print" aria-label="Close">×</button>
+            </div>
+            <div class="kds-modal-body" style="background:#090d16;">
+                <div id="thermal-slip-content" class="thermal-slip-card">
+                    <!-- Slip content -->
+                </div>
+                <div style="margin-top:16px; display:flex; gap:10px;">
+                    <button id="btn-trigger-print" class="bump-btn" style="height:48px; font-size:1rem;">🖨️ Print Slip</button>
+                    <button id="btn-dismiss-print" class="touch-action-btn" style="flex:1;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS CONTAINER -->
+    <div id="kds-toast-container" class="kds-toast-container" aria-live="polite"></div>
+
+    <script type="module" src="kds.js"></script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+/* ==========================================================================
+   Operational Manager Board & Dashboard - Stylesheet
+   Executive Dark Glassmorphism, Luxury Amber/Emerald/Crimson Accents
+   DOC-20261007-WA0006 Manager Board Specifications
+   ========================================================================== */
+
+:root {
+    --bg-base: #070a12;
+    --bg-surface: #0f1624;
+    --bg-surface-elevated: #162032;
+    --bg-card: #131c2d;
+    --bg-card-hover: #1c2840;
+    --bg-glass: rgba(15, 22, 36, 0.85);
+
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-medium: rgba(255, 255, 255, 0.16);
+    --border-amber: rgba(245, 158, 11, 0.4);
+    --border-emerald: rgba(16, 185, 129, 0.4);
+    --border-crimson: rgba(239, 68, 68, 0.4);
+
+    --primary-amber: #f59e0b;
+    --primary-amber-glow: rgba(245, 158, 11, 0.25);
+    --accent-emerald: #10b981;
+    --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+    --accent-crimson: #ef4444;
+    --accent-crimson-glow: rgba(239, 68, 68, 0.25);
+    --accent-amber: #f59e0b;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-amber: #fcd34d;
+    --text-emerald: #34d399;
+    --text-crimson: #f87171;
+
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-pill: 9999px;
+
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 25px var(--primary-amber-glow);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-base);
+    background-image: 
+        radial-gradient(circle at 10% 15%, rgba(245, 158, 11, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(16, 185, 129, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.5) 0%, transparent 80%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+/* Dashboard Shell */
+.dashboard-layout {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 24px 28px 60px;
+}
+
+/* Top Navigation Bar */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 16px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-card);
+}
+
+.brand-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 14px var(--primary-amber-glow);
+}
+
+.brand-info h1 {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.brand-info p {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.nav-terminals {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.terminal-pill-btn {
+    text-decoration: none;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.terminal-pill-btn:hover {
+    border-color: var(--primary-amber);
+    color: var(--text-primary);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.terminal-pill-btn.active {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--primary-amber);
+    color: var(--text-amber);
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-emerald);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--border-emerald);
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+}
+
+.live-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulse 2s infinite;
+}
+
+/* SECTION 1: TODAY EXECUTIVE KPI BANNER */
+.section-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
+}
+
+.section-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--text-amber);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.today-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+}
+
+.kpi-tile {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-amber), transparent);
+}
+
+.kpi-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+.kpi-value {
+    font-family: var(--font-heading);
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: 8px;
+}
+
+.kpi-value.sales {
+    color: var(--text-amber);
+}
+
+.kpi-subtext {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kpi-badge {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--text-emerald);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.72rem;
+}
+
+/* 2-COLUMN OPERATIONAL SPLIT */
+.ops-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* SECTION 2: KITCHEN TRAFFIC LIGHT STATUS */
+.kitchen-status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.kitchen-stat-card {
+    border-radius: var(--radius-lg);
+    padding: 18px 14px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+}
+
+.kitchen-stat-card.open-card {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: var(--border-emerald);
+}
+
+.kitchen-stat-card.delayed-card {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--border-amber);
+}
+
+.kitchen-stat-card.late-card {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--border-crimson);
+}
+
+.stat-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.stat-count {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.kitchen-stat-card.open-card .stat-count { color: var(--text-emerald); }
+.kitchen-stat-card.delayed-card .stat-count { color: var(--text-amber); }
+.kitchen-stat-card.late-card .stat-count { color: var(--text-crimson); }
+
+.stat-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* SECTION 3: INVENTORY THRESHOLD MONITOR */
+.inventory-threshold-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inventory-row {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.inventory-row:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-medium);
+}
+
+.inventory-row.critical {
+    border-left: 4px solid var(--accent-crimson);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.inventory-row.warning {
+    border-left: 4px solid var(--accent-amber);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.inventory-row.healthy {
+    border-left: 4px solid var(--accent-emerald);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.inv-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.inv-icon {
+    font-size: 16px;
+}
+
+.inv-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.inv-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.inv-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.inv-balance {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+    min-width: 70px;
+    text-align: right;
+}
+
+.inv-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.04em;
+}
+
+.inv-badge.critical {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--text-crimson);
+    border: 1px solid var(--border-crimson);
+}
+
+.inv-badge.warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--text-amber);
+    border: 1px solid var(--border-amber);
+}
+
+.inv-badge.healthy {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--text-emerald);
+    border: 1px solid var(--border-emerald);
+}
+
+/* SECTION 4: COOK NEXT BATCH */
+.batch-cook-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(15, 22, 36, 0.95));
+    border: 1px solid var(--border-amber);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.batch-info h3 {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.batch-yield {
+    display: inline-block;
+    background: var(--primary-amber);
+    color: #451a03;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.88rem;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
+.batch-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    max-width: 380px;
+}
+
+.btn-start-batch {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #451a03;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    padding: 12px 22px;
+    border-radius: var(--radius-pill);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px var(--primary-amber-glow);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-start-batch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+}
+
+/* SECTION 5: PURCHASE ORDERS */
+.po-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.po-item-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.po-item-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-medium);
+}
+
+.po-details h4 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.po-meta {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.po-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.po-amount {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--text-amber);
+    min-width: 85px;
+    text-align: right;
+}
+
+.btn-approve-po {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid var(--border-emerald);
+    color: var(--text-emerald);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-approve-po:hover {
+    background: #10b981;
+    color: #064e3b;
+    box-shadow: 0 4px 14px var(--accent-emerald-glow);
+}
+
+.btn-approve-po:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .today-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .ops-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .dashboard-layout { padding: 14px 14px 40px; }
+    .today-kpi-grid { grid-template-columns: 1fr; }
+    .kitchen-status-grid { grid-template-columns: 1fr; }
+    .dashboard-header { flex-direction: column; gap: 14px; align-items: flex-start; }
+    .batch-cook-card { flex-direction: column; align-items: flex-start; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+}

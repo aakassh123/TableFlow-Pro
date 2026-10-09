@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Order Tracking | DUM HOUSE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0B0F17;
+            --bg-card: rgba(22, 28, 42, 0.75);
+            --bg-card-border: rgba(255, 255, 255, 0.08);
+            --primary: #FF7A00;
+            --primary-glow: rgba(255, 122, 0, 0.25);
+            --accent-gold: #FFB800;
+            --emerald: #10B981;
+            --emerald-glow: rgba(16, 185, 129, 0.25);
+            --amber: #F59E0B;
+            --rose: #EF4444;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 122, 0, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+        }
+
+        .tracker-container {
+            width: 100%;
+            max-width: 580px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header.brand-header {
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        .brand-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FF9431 0%, #FFB800 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-header p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Order Banner */
+        .order-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--bg-card-border);
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+
+        .order-meta h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .order-meta .badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(255, 122, 0, 0.15);
+            color: #FFA048;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .eta-callout {
+            text-align: right;
+        }
+
+        .eta-callout .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .eta-callout .range {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-gold);
+            text-shadow: 0 0 16px rgba(255, 184, 0, 0.35);
+        }
+
+        .eta-callout .delay-pill {
+            display: inline-block;
+            font-size: 10px;
+            color: var(--rose);
+            background: rgba(239, 68, 68, 0.15);
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* Realtime Status Indicator */
+        .status-hero {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .status-hero.preparing {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        .status-hero.ready {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 24px var(--emerald-glow);
+        }
+
+        .status-pulse {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 12px var(--emerald);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .status-text h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .status-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Stepper Flow */
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            position: relative;
+            margin: 20px 0 10px 10px;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            bottom: 20px;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            background: #1A2234;
+            color: var(--text-dim);
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary);
+            color: #FFF;
+            border-color: #FFA048;
+            box-shadow: 0 0 16px var(--primary-glow);
+        }
+
+        .step.done .step-circle {
+            background: var(--emerald);
+            color: #FFF;
+            border-color: var(--emerald);
+        }
+
+        .step-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .step.active .step-title {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .step.done .step-title {
+            color: var(--text-muted);
+        }
+
+        .step-time {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        /* Items summary */
+        .items-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .items-header {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .ws-status-bar {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .ws-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+        }
+
+        .ws-dot.disconnected {
+            background: var(--rose);
+        }
+    </style>
+</head>
+<body>
+    <div class="tracker-container">
+        <header class="brand-header">
+            <h1>DUM HOUSE</h1>
+            <p>Live Kitchen Order Tracker • Realtime WebSockets</p>
+        </header>
+
+        <div class="card">
+            <div class="order-banner">
+                <div class="order-meta">
+                    <h2 id="order-number">ORD-20261007-0017</h2>
+                    <span class="badge" id="order-channel">DELIVERY</span>
+                </div>
+                <div class="eta-callout">
+                    <div class="label">Promise Window</div>
+                    <div class="range" id="promise-range">30–35 min</div>
+                    <div class="delay-pill hidden" id="delay-badge">+10m surge</div>
+                </div>
+            </div>
+
+            <div class="status-hero" id="status-hero">
+                <div class="status-pulse" id="status-pulse"></div>
+                <div class="status-text">
+                    <h3 id="status-heading">Kitchen Preparing</h3>
+                    <p id="status-subtext">The chefs are cooking your fresh order at Curry & Tandoor line</p>
+                </div>
+            </div>
+
+            <!-- 5-Step Stepper Flow -->
+            <div class="stepper">
+                <div class="step done" id="step-placed">
+                    <div class="step-circle">✓</div>
+                    <div class="step-content">
+                        <div class="step-title">Order Received</div>
+                        <div class="step-time" id="time-placed">Confirmed</div>
+                    </div>
+                </div>
+
+                <div class="step active" id="step-accepted">
+                    <div class="step-circle">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Kitchen Accepted</div>
+                        <div class="step-time" id="time-accepted">In progress</div>
+                    </div>
+                </div>
+
+                <div class="step" id="step-preparing">
+                    <div class="step-circle">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Cooking at Stations</div>
+                        <div class="step-time" id="time-preparing">Pending</div>
+                    </div>
+                </div>
+
+                <div class="step" id="step-ready">
+                    <div class="step-circle">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Order Ready & Packed</div>
+                        <div class="step-time" id="time-ready">Pending</div>
+                    </div>
+                </div>
+
+                <div class="step" id="step-delivered">
+                    <div class="step-circle">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Dispatched / Completed</div>
+                        <div class="step-time" id="time-delivered">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card items-card">
+            <div class="items-header">Order Items</div>
+            <div id="items-list">
+                <div class="item-row"><span>2 × Butter Chicken Special</span><span style="color:var(--text-muted)">Curry Line</span></div>
+                <div class="item-row"><span>1 × Dal Makhani Bukhara</span><span style="color:var(--text-muted)">Curry Line</span></div>
+            </div>
+        </div>
+
+        <div class="ws-status-bar">
+            <div class="ws-dot" id="ws-indicator"></div>
+            <span id="ws-status-text">Connected to Realtime WebSocket Service</span>
+        </div>
+    </div>
+
+    <script src="/track.js"></script>
+</body>
+</html>

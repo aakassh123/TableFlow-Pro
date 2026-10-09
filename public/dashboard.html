@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Operational Board • Restaurant Operating Platform</title>
+    <meta name="description" content="Operational Manager Board displaying real-time daily sales, kitchen traffic lights, inventory thresholds, batch cook recommendations, and purchase orders.">
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+
+        <!-- Top Navigation Header -->
+        <header class="dashboard-header">
+            <div class="brand-group">
+                <div class="brand-icon">👑</div>
+                <div class="brand-info">
+                    <h1>Operational Manager Board</h1>
+                    <p>DUM HOUSE • Indiranagar Flagship</p>
+                </div>
+            </div>
+
+            <div class="nav-terminals">
+                <a href="/" class="terminal-pill-btn">🖥️ POS Terminal</a>
+                <a href="/kds" class="terminal-pill-btn">🍳 Kitchen KDS</a>
+                <a href="/table/7" class="terminal-pill-btn">📱 Table 07 QR</a>
+                <a href="/conflicts" class="terminal-pill-btn" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">🛡️ Edge Node & Conflicts</a>
+                <div class="live-indicator">
+                    <span class="live-pulse"></span>
+                    <span id="wsStatusText">Live Sync Active</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECTION 1: TODAY EXECUTIVE KPIS -->
+        <section class="section-card">
+            <div class="section-card-header">
+                <div class="section-title">
+                    <span>📊</span> TODAY PERFORMANCE SUMMARY
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);" id="lastUpdatedText">Updated just now</div>
+            </div>
+
+            <div class="today-kpi-grid">
+                <!-- Total Income -->
+                <div class="kpi-tile" style="border-color: rgba(16, 185, 129, 0.3);">
+                    <div class="kpi-label">Total Settled Income</div>
+                    <div class="kpi-value sales" id="kpiIncome" style="color: #10b981;">₹42,850</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">Live Paid / Confirmed</span>
+                        <span>Net collected revenue</span>
+                    </div>
+                </div>
+
+                <!-- Total Discounts -->
+                <div class="kpi-tile" style="border-color: rgba(239, 68, 68, 0.25);">
+                    <div class="kpi-label">Total Discounts Given</div>
+                    <div class="kpi-value" id="kpiDiscounts" style="color: #f87171;">₹1,200</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">Promo & Manager Saved</span>
+                        <span id="kpiDiscountRatio">Across all orders</span>
+                    </div>
+                </div>
+
+                <!-- Net Sales & Taxes -->
+                <div class="kpi-tile">
+                    <div class="kpi-label">Net Sales & Tax</div>
+                    <div class="kpi-value" id="kpiNetSales" style="font-size: 1.6rem;">₹40,707.50</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-badge">GST 5%</span>
+                        <span id="kpiTaxDisplay">Tax: ₹2,142.50</span>
+                    </div>
+                </div>
+
+                <!-- Orders -->
+                <div class="kpi-tile">
+                    <div class="kpi-label">Completed & Active Orders</div>
+                    <div class="kpi-value" id="kpiOrders">128 Orders</div>
+                    <div class="kpi-subtext">
+                        <span>Dine-in, QR, Walk-in, Delivery</span>
+                    </div>
+                </div>
+
+                <!-- Avg Ticket Time -->
+                <div class="kpi-tile">
+                    <div class="kpi-label">Avg Station Prep Time</div>
+                    <div class="kpi-value" id="kpiAvgTicket">8.2 min</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-badge">Target: 12.0 min</span>
+                        <span>Rolling median</span>
+                    </div>
+                </div>
+
+                <!-- Promise Hit Rate -->
+                <div class="kpi-tile">
+                    <div class="kpi-label">Promise Hit Rate</div>
+                    <div class="kpi-value" id="kpiPromiseHitRate">94%</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-badge">Standard ≥ 90%</span>
+                        <span>Honest ETA compliance</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2-COLUMN OPERATIONAL SPLIT -->
+        <div class="ops-grid">
+
+            <!-- SECTION 2: KITCHEN STATUS -->
+            <section class="section-card">
+                <div class="section-card-header">
+                    <div class="section-title">
+                        <span>🍳</span> KITCHEN STATUS
+                    </div>
+                    <a href="/kds" style="font-size: 0.75rem; color: var(--text-amber); text-decoration: none;">View KDS Pass ➔</a>
+                </div>
+
+                <div class="kitchen-status-grid">
+                    <div class="kitchen-stat-card open-card">
+                        <div class="stat-icon">🟢</div>
+                        <div class="stat-count" id="statOpen">8</div>
+                        <div class="stat-title">Open Tickets</div>
+                    </div>
+                    <div class="kitchen-stat-card delayed-card">
+                        <div class="stat-icon">🟡</div>
+                        <div class="stat-count" id="statDelayed">2</div>
+                        <div class="stat-title">Delayed (Amber)</div>
+                    </div>
+                    <div class="kitchen-stat-card late-card">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-count" id="statLate">1</div>
+                        <div class="stat-title">Late (Red Alert)</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                    Multi-station tickets synchronized across Curry, Tandoor, Grill, Wok, and Packing
+                </div>
+            </section>
+
+            <!-- SECTION 3: INVENTORY THRESHOLD MONITOR -->
+            <section class="section-card">
+                <div class="section-card-header">
+                    <div class="section-title">
+                        <span>📦</span> INVENTORY THRESHOLDS
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Append-Only Stock Ledger</div>
+                </div>
+
+                <div class="inventory-threshold-list" id="inventoryThresholdList">
+                    <!-- Dynamic traffic lights -->
+                    <div class="inventory-row critical">
+                        <div class="inv-left">
+                            <span class="inv-icon">🔴</span>
+                            <div>
+                                <div class="inv-name">Paneer</div>
+                                <div class="inv-sub">Fresh Malai Paneer • Safety Buffer 2.5kg</div>
+                            </div>
+                        </div>
+                        <div class="inv-right">
+                            <div class="inv-balance">900g</div>
+                            <span class="inv-badge critical">CRITICAL</span>
+                        </div>
+                    </div>
+
+                    <div class="inventory-row critical">
+                        <div class="inv-left">
+                            <span class="inv-icon">🔴</span>
+                            <div>
+                                <div class="inv-name">Butter</div>
+                                <div class="inv-sub">Amul Salted Butter • Safety Buffer 1.5kg</div>
+                            </div>
+                        </div>
+                        <div class="inv-right">
+                            <div class="inv-balance">600g</div>
+                            <span class="inv-badge critical">CRITICAL</span>
+                        </div>
+                    </div>
+
+                    <div class="inventory-row warning">
+                        <div class="inv-left">
+                            <span class="inv-icon">🟡</span>
+                            <div>
+                                <div class="inv-name">Maida</div>
+                                <div class="inv-sub">Refined Wheat Flour • Reorder Point 5.0kg</div>
+                            </div>
+                        </div>
+                        <div class="inv-right">
+                            <div class="inv-balance">4.3kg</div>
+                            <span class="inv-badge warning">WARNING</span>
+                        </div>
+                    </div>
+
+                    <div class="inventory-row healthy">
+                        <div class="inv-left">
+                            <span class="inv-icon">🟢</span>
+                            <div>
+                                <div class="inv-name">Oil</div>
+                                <div class="inv-sub">Sunflower Cooking Oil • Minimum Buffer 4.0L</div>
+                            </div>
+                        </div>
+                        <div class="inv-right">
+                            <div class="inv-balance">6L</div>
+                            <span class="inv-badge healthy">HEALTHY</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- 2-COLUMN LOWER SPLIT: COOK NEXT BATCH & PURCHASE ORDERS -->
+        <div class="ops-grid">
+
+            <!-- SECTION 4: COOK NEXT BATCH -->
+            <section class="section-card">
+                <div class="section-card-header">
+                    <div class="section-title">
+                        <span>🍲</span> COOK NEXT BATCH
+                    </div>
+                    <span style="font-size: 0.72rem; color: var(--text-amber); font-weight: 700; text-transform: uppercase;">Anticipatory Batch Prep</span>
+                </div>
+
+                <div class="batch-cook-card">
+                    <div class="batch-info">
+                        <h3 id="batchItemName">Makhani Gravy</h3>
+                        <div class="batch-yield" id="batchYieldDisplay">≈ 8 portions</div>
+                        <p class="batch-desc" id="batchReasonDesc">
+                            Active Curry queue projecting zero gravy in ~22 minutes based on real-time consumption velocity.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-start-batch" id="btnStartBatch">
+                        ⚡ START BATCH NOW
+                    </button>
+                </div>
+            </section>
+
+            <!-- SECTION 5: PURCHASE ORDERS -->
+            <section class="section-card">
+                <div class="section-card-header">
+                    <div class="section-title">
+                        <span>📋</span> PURCHASE ORDERS
+                    </div>
+                    <span class="kpi-badge" id="poCountBadge" style="background: rgba(245, 158, 11, 0.2); color: var(--text-amber);">
+                        2 Awaiting Approval
+                    </span>
+                </div>
+
+                <div class="po-list" id="poListContainer">
+                    <!-- PO 1 -->
+                    <div class="po-item-card">
+                        <div class="po-details">
+                            <h4>PO-20261007-001 • Nandini Dairy (KMF)</h4>
+                            <div class="po-meta">Urgent dairy replenishment for Paneer (25kg) and Butter (15kg)</div>
+                        </div>
+                        <div class="po-actions">
+                            <div class="po-amount">₹14,550</div>
+                            <button type="button" class="btn-approve-po" data-po-id="40404040-4040-4040-4040-404040404001">
+                                ✓ Approve PO
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PO 2 -->
+                    <div class="po-item-card">
+                        <div class="po-details">
+                            <h4>PO-20261007-002 • Metro Cash & Carry</h4>
+                            <div class="po-meta">Dry staples reorder for Maida (50kg) and Basmati Rice (100kg)</div>
+                        </div>
+                        <div class="po-actions">
+                            <div class="po-amount">₹18,200</div>
+                            <button type="button" class="btn-approve-po" data-po-id="40404040-4040-4040-4040-404040404002">
+                                ✓ Approve PO
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+    <!-- Dashboard Client Logic Script -->
+    <script src="/dashboard.js"></script>
+</body>
+</html>

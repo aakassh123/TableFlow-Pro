@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "migrations/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/kds", "destination": "/kds.html" },
+    { "source": "/track", "destination": "/track.html" },
+    { "source": "/track/(.*)", "destination": "/track.html" },
+    { "source": "/counter-tv", "destination": "/counter-tv.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/conflicts", "destination": "/conflict-resolution.html" },
+    { "source": "/table/(.*)", "destination": "/qr-order.html" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}

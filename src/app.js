@@ -1,6 +1,7 @@
 // Application Server & Route Registration
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { AuthService } from './modules/auth/auth.service.js';
 import { AuditService } from './modules/audit/audit.service.js';
@@ -31,6 +32,20 @@ export function createApp(dbClient) {
 
     // Serve static frontend assets from public/
     app.use(express.static(path.join(__dirname, '..', 'public')));
+
+    // Direct root route for index.html (supports local & Vercel serverless)
+    app.get('/', (req, res) => {
+        const candidates = [
+            path.join(__dirname, '..', 'public', 'index.html'),
+            path.join(__dirname, '..', 'index.html'),
+            path.join(process.cwd(), 'public', 'index.html'),
+            path.join(process.cwd(), 'index.html'),
+            '/var/task/public/index.html',
+            '/var/task/index.html'
+        ];
+        const target = candidates.find(p => fs.existsSync(p)) || candidates[0];
+        res.sendFile(target);
+    });
 
     // Direct KDS route
     app.get('/kds', (req, res) => {

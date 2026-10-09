@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "migrations/**",
+      "includeFiles": "{migrations/**,public/**,index.html}",
       "maxDuration": 15
     }
   },
@@ -14,6 +14,7 @@
     { "source": "/track", "destination": "/track.html" },
     { "source": "/track/(.*)", "destination": "/track.html" },
     { "source": "/conflicts", "destination": "/conflict-resolution.html" },
-    { "source": "/table/(.*)", "destination": "/qr-order.html" }
+    { "source": "/table/(.*)", "destination": "/qr-order.html" },
+    { "source": "/", "destination": "/index.html" }
   ]
 }

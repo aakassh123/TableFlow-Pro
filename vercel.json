@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "outputDirectory": "public",
-  "cleanUrls": true,
   "functions": {
     "api/index.js": {
       "includeFiles": "migrations/**",
@@ -16,7 +14,6 @@
     { "source": "/track", "destination": "/track.html" },
     { "source": "/track/(.*)", "destination": "/track.html" },
     { "source": "/conflicts", "destination": "/conflict-resolution.html" },
-    { "source": "/table/(.*)", "destination": "/qr-order.html" },
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/table/(.*)", "destination": "/qr-order.html" }
   ]
 }

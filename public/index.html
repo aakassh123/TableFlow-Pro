@@ -813,6 +813,67 @@
             </div>
         </div>
 
+        <!-- ============================================================== -->
+        <!-- ADD STAFF MEMBER MODAL                                         -->
+        <!-- ============================================================== -->
+        <div class="modal-backdrop hidden" id="add-staff-modal">
+            <div class="modal-card" style="width: 500px; max-width: 95vw; background: var(--surface-bg); border-radius: var(--radius-lg); box-shadow: 0 20px 40px rgba(0,0,0,0.22); overflow: hidden; border: 1px solid var(--border-default);">
+                <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--border-default); background: var(--canvas-bg);">
+                    <div>
+                        <h3 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0;">Add Staff Member</h3>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin: 3px 0 0 0;">Register crew profile, assign role & configure POS switch PIN</p>
+                    </div>
+                    <button class="drawer-close-btn" id="btn-close-staff-modal" type="button" style="font-size: 22px; cursor: pointer; border: none; background: none; color: var(--text-muted);">&times;</button>
+                </div>
+                <form id="form-add-staff" style="padding: 22px; display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">Full Name *</label>
+                        <input type="text" id="staff-input-name" placeholder="e.g. Rahul Sharma" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 14px; outline: none; font-family: var(--font-sans);" />
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">Username *</label>
+                            <input type="text" id="staff-input-username" placeholder="e.g. rahul_waiter" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 14px; outline: none; font-family: var(--font-sans);" />
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">Assigned Role *</label>
+                            <select id="staff-input-role" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 14px; outline: none; background: white; font-family: var(--font-sans);">
+                                <option value="Captain / Waiter">Captain / Waiter</option>
+                                <option value="Cashier">Cashier</option>
+                                <option value="Head Chef">Head Chef</option>
+                                <option value="Store Manager">Store Manager</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">Phone Number *</label>
+                            <input type="tel" id="staff-input-phone" placeholder="+91 98765 00005" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 14px; outline: none; font-family: var(--font-sans);" />
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">4-Digit POS Switch PIN *</label>
+                            <input type="password" id="staff-input-pin" placeholder="••••" maxlength="6" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 14px; outline: none; font-family: var(--font-mono); letter-spacing: 3px;" />
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">Shift Assignment</label>
+                        <select id="staff-input-shift" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 14px; outline: none; background: white; font-family: var(--font-sans);">
+                            <option value="Floor Dining">Floor Dining (Active Tables)</option>
+                            <option value="Shift #1">Shift #1 (Morning 9:00 AM - 4:00 PM)</option>
+                            <option value="Shift #2">Shift #2 (Evening 4:00 PM - 12:00 AM)</option>
+                            <option value="Kitchen Line">Kitchen Line (KDS Stations)</option>
+                            <option value="All Day">All Day (Full Shift)</option>
+                        </select>
+                    </div>
+                    <div id="staff-form-error" style="color: var(--status-danger); font-size: 12px; display: none;"></div>
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px;">
+                        <button type="button" id="btn-cancel-add-staff" style="padding: 10px 18px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid var(--border-default); background: var(--surface-bg); color: var(--text-secondary);">Cancel</button>
+                        <button type="submit" id="btn-submit-add-staff" style="padding: 10px 22px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; background: var(--primary); color: white; border: none; cursor: pointer; transition: background 0.15s ease;">Save Staff Member</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- TOAST NOTIFICATIONS -->
         <div class="toast-container" id="toast-container" aria-live="polite"></div>
     </div>

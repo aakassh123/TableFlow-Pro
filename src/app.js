@@ -14,6 +14,7 @@ import { EdgeNodeService, CAPABILITIES } from './modules/offline/edge-node.servi
 import { authenticate, requirePermission, requireManagerOverride } from './modules/rbac/guards.js';
 import { PERMISSIONS } from './modules/rbac/permissions.js';
 import { AppError } from './shared/errors.js';
+import { CryptoService } from './shared/crypto.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -171,6 +172,91 @@ export function createApp(dbClient) {
                 userAgent: req.headers['user-agent']
             });
             res.status(200).json({ success: true, data: result });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    // ========================================================================
+    // STAFF & SHIFT MANAGEMENT ROUTES
+    // ========================================================================
+    app.get('/api/staff', async (req, res, next) => {
+        try {
+            const outletId = '33333333-3333-3333-3333-333333333301';
+            const staffRes = await req.db.query(`
+                SELECT u.id, u.full_name, u.username, u.email, u.phone, u.is_active,
+                       COALESCE(r.name, 'Staff') as role_name,
+                       u.created_at
+                FROM users u
+                LEFT JOIN user_roles ur ON u.id = ur.user_id
+                LEFT JOIN roles r ON ur.role_id = r.id
+                WHERE u.outlet_id = $1
+                ORDER BY u.created_at ASC
+            `, [outletId]);
+            res.status(200).json({ success: true, data: staffRes.rows });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    app.post('/api/staff', async (req, res, next) => {
+        try {
+            const outletId = '33333333-3333-3333-3333-333333333301';
+            const { full_name, username, role_name, phone, email, pin, password, shift } = req.body;
+
+            if (!full_name || !username || !phone) {
+                return res.status(400).json({ success: false, message: 'Full name, username, and phone are required' });
+            }
+
+            const cleanUsername = username.toLowerCase().trim().replace(/[^a-z0-9_]/g, '_');
+            const cleanPhone = phone.trim();
+            const cleanPin = pin && pin.length >= 4 ? pin : '1234';
+            const cleanPassword = password && password.length >= 6 ? password : 'Password@123';
+
+            const passwordHash = await CryptoService.hashPassword(cleanPassword);
+            const pinHash = await CryptoService.hashPin(cleanPin);
+
+            // Fetch role
+            const roleRes = await req.db.query(
+                `SELECT id, name FROM roles WHERE outlet_id = $1 AND name = $2 LIMIT 1`,
+                [outletId, role_name || 'Captain / Waiter']
+            );
+            const roleId = roleRes.rows[0]?.id || '55555555-5555-5555-5555-555555555504';
+            const resolvedRoleName = roleRes.rows[0]?.name || role_name || 'Captain / Waiter';
+
+            const insertRes = await req.db.query(`
+                INSERT INTO users (outlet_id, username, email, phone, full_name, password_hash, pin_hash, is_active)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+                RETURNING id, outlet_id, username, email, phone, full_name, is_active, created_at
+            `, [outletId, cleanUsername, email || `${cleanUsername}@royalbiryani.in`, cleanPhone, full_name.trim(), passwordHash, pinHash]);
+
+            const newUser = insertRes.rows[0];
+
+            await req.db.query(`
+                INSERT INTO user_roles (user_id, role_id)
+                VALUES ($1, $2)
+                ON CONFLICT DO NOTHING
+            `, [newUser.id, roleId]);
+
+            res.status(201).json({
+                success: true,
+                data: {
+                    ...newUser,
+                    role_name: resolvedRoleName,
+                    shift: shift || 'Floor Dining'
+                }
+            });
+        } catch (err) {
+            console.error('Error adding staff member:', err);
+            res.status(500).json({ success: false, message: err.message });
+        }
+    });
+
+    app.delete('/api/staff/:id', async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            await req.db.query(`UPDATE users SET is_active = false WHERE id = $1`, [id]);
+            res.status(200).json({ success: true, message: 'Staff member deactivated' });
         } catch (err) {
             next(err);
         }

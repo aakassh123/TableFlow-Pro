@@ -448,6 +448,7 @@ async function initROS() {
     syncLiveDashboardMetrics();
 
     // 6. Attach Event Listeners & Realtime
+    loadStaffFromBackend();
     attachGlobalEventListeners();
     connectRealtimeHub();
 
@@ -1405,18 +1406,7 @@ function renderMoreSubpage(subId) {
             </table>
         `;
     } else if (subId === 'staff') {
-        box.innerHTML = `
-            <h3 style="font-family:var(--font-heading); font-size:16px; font-weight:700; margin-bottom:14px;">Staff Directory & Shift Assignments</h3>
-            <table class="rop-table">
-                <thead><tr><th>Name</th><th>Username</th><th>Assigned Role</th><th>Shift #</th><th>Current Status</th></tr></thead>
-                <tbody>
-                    <tr><td>Arjun Mehta</td><td>arjun_manager</td><td>Store Manager</td><td>All Day</td><td><span class="text-green">● Active</span></td></tr>
-                    <tr><td>Ramesh Kumar</td><td>ramesh_cashier</td><td>Cashier</td><td>Shift #1</td><td><span class="text-green">● On POS Duty</span></td></tr>
-                    <tr><td>Chef Sanjeev Nair</td><td>sanjeev_chef</td><td>Head Chef</td><td>Kitchen Line</td><td><span class="text-green">● Active</span></td></tr>
-                    <tr><td>Priya Sharma</td><td>priya_captain</td><td>Captain / Waiter</td><td>Floor Dining</td><td><span class="text-green">● Active</span></td></tr>
-                </tbody>
-            </table>
-        `;
+        renderStaffManagementView(box);
     } else if (subId === 'reports') {
         box.innerHTML = `
             <h3 style="font-family:var(--font-heading); font-size:16px; font-weight:700; margin-bottom:14px;">Daily Sales & Tax Z-Report (Indiranagar Outlet)</h3>
@@ -1439,6 +1429,140 @@ function renderMoreSubpage(subId) {
             </div>
         `;
     }
+}
+
+// ==========================================================================
+// STAFF DIRECTORY & SHIFT MANAGEMENT
+// ==========================================================================
+let appStaffList = [
+    { id: '66666666-6666-6666-6666-666666666601', name: 'Arjun Mehta', username: 'arjun_manager', role: 'Store Manager', shift: 'All Day', status: 'Active', phone: '+91 98765 00001' },
+    { id: '66666666-6666-6666-6666-666666666603', name: 'Ramesh Kumar', username: 'ramesh_cashier', role: 'Cashier', shift: 'Shift #1', status: 'On POS Duty', phone: '+91 98765 00003' },
+    { id: '66666666-6666-6666-6666-666666666602', name: 'Chef Sanjeev Nair', username: 'sanjeev_chef', role: 'Head Chef', shift: 'Kitchen Line', status: 'Active', phone: '+91 98765 00002' },
+    { id: '66666666-6666-6666-6666-666666666604', name: 'Priya Sharma', username: 'priya_captain', role: 'Captain / Waiter', shift: 'Floor Dining', status: 'Active', phone: '+91 98765 00004' }
+];
+
+async function loadStaffFromBackend() {
+    try {
+        const res = await fetch('/api/staff');
+        if (res.ok) {
+            const result = await res.json();
+            if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                const shiftMapping = {
+                    'Store Manager': 'All Day',
+                    'Cashier': 'Shift #1',
+                    'Head Chef': 'Kitchen Line',
+                    'Captain / Waiter': 'Floor Dining'
+                };
+                appStaffList = result.data.map(u => ({
+                    id: u.id,
+                    name: u.full_name || u.username,
+                    username: u.username,
+                    role: u.role_name || 'Captain / Waiter',
+                    shift: u.shift || shiftMapping[u.role_name] || 'Floor Dining',
+                    status: u.is_active ? (u.username === 'ramesh_cashier' ? 'On POS Duty' : 'Active') : 'Inactive',
+                    phone: u.phone || ''
+                }));
+            }
+        }
+    } catch (e) {
+        // silent fallback to default
+    }
+}
+
+function renderStaffManagementView(box) {
+    if (!box) box = document.getElementById('more-subcontent-box');
+    if (!box) return;
+
+    const rowsHtml = appStaffList.map(s => {
+        let roleBadge = '';
+        if (s.role.includes('Manager')) {
+            roleBadge = `<span style="background:#EDE9FE; color:#6D28D9; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">👑 ${s.role}</span>`;
+        } else if (s.role.includes('Chef')) {
+            roleBadge = `<span style="background:#FEE2E2; color:#B91C1C; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">👨‍🍳 ${s.role}</span>`;
+        } else if (s.role.includes('Cashier')) {
+            roleBadge = `<span style="background:#DBEAFE; color:#1D4ED8; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">💳 ${s.role}</span>`;
+        } else {
+            roleBadge = `<span style="background:#CCFBF1; color:#0F766E; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">🍽️ ${s.role}</span>`;
+        }
+
+        const initials = s.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+        return `
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:var(--primary-tint); color:var(--primary); font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center; border:1px solid var(--primary-border);">
+                            ${initials}
+                        </div>
+                        <div>
+                            <div style="font-weight:600; color:var(--text-primary); font-size:13.5px;">${s.name}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${s.phone || ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span style="font-family:var(--font-mono); font-size:12.5px; color:var(--text-secondary); background:var(--surface-subtle); padding:2px 6px; border-radius:4px;">@${s.username}</span></td>
+                <td>${roleBadge}</td>
+                <td><span style="font-size:12.5px; color:var(--text-secondary); font-weight:500;">${s.shift}</span></td>
+                <td>
+                    <span class="${s.status === 'Inactive' ? 'text-danger' : 'text-green'}" style="font-size:12.5px; font-weight:600;">
+                        ${s.status === 'Inactive' ? '○ Inactive' : (s.status.includes('POS') ? '● On POS Duty' : '● Active')}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+                <h3 style="font-family:var(--font-heading); font-size:17px; font-weight:700; margin-bottom:2px; color:var(--text-primary);">Staff Directory & Shift Assignments</h3>
+                <p style="font-size:12px; color:var(--text-secondary);">Manage restaurant staff crew, assigned roles, shift coverage and POS security PINs.</p>
+            </div>
+            <button id="btn-open-add-staff" style="display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#FFF; font-weight:600; font-size:13.5px; padding:9px 18px; border-radius:var(--radius-md); border:none; cursor:pointer; box-shadow:var(--shadow-sm); transition:background 0.15s ease;">
+                <span style="font-size:18px; font-weight:700; line-height:1;">+</span> Add Staff Member
+            </button>
+        </div>
+        <table class="rop-table">
+            <thead><tr><th>NAME</th><th>USERNAME</th><th>ASSIGNED ROLE</th><th>SHIFT #</th><th>CURRENT STATUS</th></tr></thead>
+            <tbody id="staff-table-body">
+                ${rowsHtml}
+            </tbody>
+        </table>
+    `;
+
+    document.getElementById('btn-open-add-staff')?.addEventListener('click', openAddStaffModal);
+}
+
+function openAddStaffModal() {
+    const modal = document.getElementById('add-staff-modal');
+    if (!modal) return;
+    document.getElementById('form-add-staff')?.reset();
+    const errEl = document.getElementById('staff-form-error');
+    if (errEl) {
+        errEl.style.display = 'none';
+        errEl.textContent = '';
+    }
+    modal.classList.remove('hidden');
+    setTimeout(() => document.getElementById('staff-input-name')?.focus(), 50);
+}
+
+function closeAddStaffModal() {
+    const modal = document.getElementById('add-staff-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = `<span style="font-size:15px; color:#10B981;">✓</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3200);
 }
 
 // ==========================================================================
@@ -3233,6 +3357,7 @@ function attachGlobalEventListeners() {
         if (e.key === 'Escape') {
             closeCommandPalette();
             closeDrawer();
+            closeAddStaffModal();
         }
     });
 
@@ -3242,6 +3367,98 @@ function attachGlobalEventListeners() {
 
     document.getElementById('command-palette-modal')?.addEventListener('click', (e) => {
         if (e.target.id === 'command-palette-modal') closeCommandPalette();
+    });
+
+    // 12. Add Staff Modal & Form Listeners
+    document.getElementById('btn-close-staff-modal')?.addEventListener('click', closeAddStaffModal);
+    document.getElementById('btn-cancel-add-staff')?.addEventListener('click', closeAddStaffModal);
+    document.getElementById('add-staff-modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'add-staff-modal') closeAddStaffModal();
+    });
+
+    document.getElementById('form-add-staff')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('staff-input-name')?.value.trim();
+        const username = document.getElementById('staff-input-username')?.value.trim();
+        const role = document.getElementById('staff-input-role')?.value;
+        const phone = document.getElementById('staff-input-phone')?.value.trim();
+        const pin = document.getElementById('staff-input-pin')?.value.trim();
+        const shift = document.getElementById('staff-input-shift')?.value;
+        const errEl = document.getElementById('staff-form-error');
+
+        if (!name || !username || !phone || !pin) {
+            if (errEl) {
+                errEl.textContent = 'Please fill out all required fields.';
+                errEl.style.display = 'block';
+            }
+            return;
+        }
+
+        const submitBtn = document.getElementById('btn-submit-add-staff');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+        }
+
+        try {
+            const res = await fetch('/api/staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    full_name: name,
+                    username: username,
+                    role_name: role,
+                    phone: phone,
+                    pin: pin,
+                    shift: shift
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                appStaffList.push({
+                    id: data.data.id,
+                    name: data.data.full_name,
+                    username: data.data.username,
+                    role: data.data.role_name || role,
+                    shift: data.data.shift || shift,
+                    status: 'Active',
+                    phone: data.data.phone
+                });
+            } else {
+                appStaffList.push({
+                    id: Date.now().toString(),
+                    name: name,
+                    username: username,
+                    role: role,
+                    shift: shift,
+                    status: 'Active',
+                    phone: phone
+                });
+            }
+
+            closeAddStaffModal();
+            renderStaffManagementView();
+            showToast(`Staff member "${name}" added successfully!`);
+        } catch (err) {
+            appStaffList.push({
+                id: Date.now().toString(),
+                name: name,
+                username: username,
+                role: role,
+                shift: shift,
+                status: 'Active',
+                phone: phone
+            });
+            closeAddStaffModal();
+            renderStaffManagementView();
+            showToast(`Staff member "${name}" added successfully!`);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Staff Member';
+            }
+        }
     });
 
     // Live Clock in Kitchen

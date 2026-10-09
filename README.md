@@ -1,8 +1,16 @@
 # TableFlow Pro - Enterprise Restaurant Operating Platform (ROP)
 
-High-throughput, ACID-compliant Restaurant Operating System featuring real-time KOT/KDS routing, offline-first edge sync, recipe-driven inventory ledger, dynamic ETA scheduling, and contactless QR ordering.
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Vercel-success?style=for-the-badge&logo=vercel)](https://table-flow-pro.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg?style=for-the-badge&logo=node.js)](package.json)
+
+> **🚀 Live Public Demo:** [https://table-flow-pro.vercel.app](https://table-flow-pro.vercel.app)  
+> *No login required — open to anyone for immediate review and testing.*
+
+High-throughput, ACID-compliant Restaurant Operating System featuring real-time KOT/KDS routing, offline-first edge sync, recipe-driven inventory ledger, dynamic ETA scheduling, staff & shift access management, and contactless QR ordering.
 
 ---
+
 
 ## 1. Schema Modules & Tables (46 Domain Tables)
 

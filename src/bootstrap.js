@@ -10,7 +10,15 @@ import { CryptoService } from './shared/crypto.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const migrationsDir = path.resolve(__dirname, '..', 'migrations');
+
+// Flexible migrations folder resolution (works on local Windows/Linux and Vercel Serverless /var/task)
+const possibleMigrationDirs = [
+    path.resolve(process.cwd(), 'migrations'),
+    path.resolve(__dirname, '..', 'migrations'),
+    path.resolve(__dirname, 'migrations'),
+    '/var/task/migrations'
+];
+const migrationsDir = possibleMigrationDirs.find(d => fs.existsSync(d)) || possibleMigrationDirs[0];
 
 let cachedPool = null;
 let cachedApp = null;
@@ -62,11 +70,15 @@ export async function bootstrapDatabase() {
     ];
 
     for (const f of migrationFiles) {
-        const filePath = path.join(migrationsDir, f);
-        if (fs.existsSync(filePath)) {
-            const sql = fs.readFileSync(filePath, 'utf8')
-                .replace(/CREATE EXTENSION IF NOT EXISTS [^;]+;/gi, '');
-            db.public.none(sql);
+        try {
+            const filePath = path.join(migrationsDir, f);
+            if (fs.existsSync(filePath)) {
+                const sql = fs.readFileSync(filePath, 'utf8')
+                    .replace(/CREATE EXTENSION IF NOT EXISTS [^;]+;/gi, '');
+                db.public.none(sql);
+            }
+        } catch (migErr) {
+            console.warn(`Migration ${f} note:`, migErr.message);
         }
     }
 
@@ -79,13 +91,17 @@ export async function bootstrapDatabase() {
     const supplierId = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1';
 
     // Hash passwords for staff users
-    const testPasswordHash = await CryptoService.hashPassword('Password@123');
-    const testPinHash = await CryptoService.hashPin('9999');
-    db.public.none(`
-        UPDATE users 
-        SET password_hash = '${testPasswordHash}', pin_hash = '${testPinHash}'
-        WHERE outlet_id = '${outletId}';
-    `);
+    try {
+        const testPasswordHash = await CryptoService.hashPassword('Password@123');
+        const testPinHash = await CryptoService.hashPin('9999');
+        db.public.none(`
+            UPDATE users 
+            SET password_hash = '${testPasswordHash}', pin_hash = '${testPinHash}'
+            WHERE outlet_id = '${outletId}';
+        `);
+    } catch (e) {
+        console.warn('Password hash note:', e.message);
+    }
 
     // Ingest initial raw stock inventory
     try {
